@@ -5,8 +5,10 @@
 //  - 陣列型欄位（適用模型、標籤）不是原生 input，改用 setValue 手動寫入，
 //    再用 useWatch 讀回目前選取值來畫出「被選中」的樣式。
 //  - 驗證只在送出時觸發；通過後才呼叫 props.onSubmit(data)。
+import { useState } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { isSkillActive } from "../../api/adminApi";
+import { uploadFile } from "../../api/uploadApi";
 import {
   BLOCK_TYPES,
   createEmptyBlock,
@@ -63,14 +65,110 @@ function Label({ children, required }) {
   );
 }
 
+// image / video 區塊的「檔案上傳」欄位，取代原本手貼網址的文字框。
+// 選檔後打 /utility/upload，成功再把回傳的 url 寫進 data.context —— 資料形狀不變，
+// 只是 url 的來源從「手打」變成「上傳」。context 仍以一個 hidden input 註冊，
+// 維持 react-hook-form 的必填驗證；上傳成功後 setValue 會順帶觸發重新驗證。
+function MediaUploadField({ index, type, control, register, setValue, error }) {
+  const fieldName = `exampleOutput.${index}.data.context`;
+  const url = useWatch({ control, name: fieldName });
+  const [status, setStatus] = useState("idle"); // idle | uploading | error
+  const [uploadError, setUploadError] = useState("");
+  const accept = type === "video" ? "video/*" : "image/*";
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // 清掉，讓「選同一個檔」也能再次觸發 onChange
+    if (!file) return;
+
+    setStatus("uploading");
+    setUploadError("");
+    try {
+      const uploadedUrl = await uploadFile(file);
+      setValue(fieldName, uploadedUrl, { shouldValidate: true, shouldDirty: true });
+      setStatus("idle");
+    } catch (err) {
+      setUploadError(err.message || "上傳失敗，請再試一次");
+      setStatus("error");
+    }
+  };
+
+  const isUploading = status === "uploading";
+
+  return (
+    <div className="space-y-2">
+      {/* 隱藏欄位：真正被 RHF 驗證的 context，值由上傳結果寫入 */}
+      <input
+        type="hidden"
+        {...register(fieldName, {
+          required: "請上傳檔案",
+          validate: (v) =>
+            (typeof v === "string" && v.trim() !== "") || "請上傳檔案",
+        })}
+      />
+
+      {url && !isUploading && (
+        <div className="space-y-1.5 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
+          {type === "video" ? (
+            <video
+              src={url}
+              controls
+              className="max-h-48 w-full rounded object-contain"
+            />
+          ) : (
+            <img
+              src={url}
+              alt=""
+              className="max-h-48 w-full rounded object-contain"
+            />
+          )}
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="block break-all text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+          >
+            {url}
+          </a>
+        </div>
+      )}
+
+      <label
+        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+          isUploading
+            ? "cursor-not-allowed border-gray-200 text-gray-400 dark:border-gray-700"
+            : "cursor-pointer border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+        }`}
+      >
+        <input
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={handleFile}
+          disabled={isUploading}
+        />
+        {isUploading ? "上傳中…" : url ? "更換檔案" : "選擇檔案上傳"}
+      </label>
+
+      {status === "error" && (
+        <p className="text-xs text-red-500">{uploadError}</p>
+      )}
+      {error?.data?.context && !isUploading && status !== "error" && (
+        <p className="text-xs text-red-500">{error.data.context.message}</p>
+      )}
+    </div>
+  );
+}
+
 // 範例輸出的單一區塊。type 決定要畫哪些欄位：
-// text 只有一個多行的「內容」；image / video / html 則是單行的「網址」外加
+// text / html 只有一個多行的「內容」；image / video 則是「上傳檔案」外加
 // alt / caption 兩個選填欄位。切換 type 時不清空任何欄位，隱藏的值留在表單狀態裡，
 // 由送出時的 toPayload 負責裁掉，避免手滑切錯就把填好的內容弄丟。
 function ExampleOutputBlock({
   index,
   control,
   register,
+  setValue,
   error,
   onMoveUp,
   onMoveDown,
@@ -80,7 +178,7 @@ function ExampleOutputBlock({
 }) {
   const type = useWatch({ control, name: `exampleOutput.${index}.type` });
   const withMeta = hasMetaFields(type);
-  const contextLabel = withMeta ? "網址" : "內容";
+  const contextLabel = withMeta ? "上傳檔案" : "內容";
 
   const moveButtonClass =
     "rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800";
@@ -138,27 +236,28 @@ function ExampleOutputBlock({
       <div className="space-y-1.5">
         <Label required>{contextLabel}</Label>
         {withMeta ? (
-          <input
-            type="text"
-            placeholder="https://…"
-            {...register(
-              `exampleOutput.${index}.data.context`,
-              requiredText(contextLabel),
-            )}
-            className={inputClass}
+          <MediaUploadField
+            index={index}
+            type={type}
+            control={control}
+            register={register}
+            setValue={setValue}
+            error={error}
           />
         ) : (
-          <textarea
-            rows={4}
-            {...register(
-              `exampleOutput.${index}.data.context`,
-              requiredText(contextLabel),
+          <>
+            <textarea
+              rows={4}
+              {...register(
+                `exampleOutput.${index}.data.context`,
+                requiredText(contextLabel),
+              )}
+              className={`${inputClass} resize-y font-mono`}
+            />
+            {error?.data?.context && (
+              <p className="text-xs text-red-500">{error.data.context.message}</p>
             )}
-            className={`${inputClass} resize-y font-mono`}
-          />
-        )}
-        {error?.data?.context && (
-          <p className="text-xs text-red-500">{error.data.context.message}</p>
+          </>
         )}
       </div>
 
@@ -431,6 +530,7 @@ export default function SkillForm({
                   index={index}
                   control={control}
                   register={register}
+                  setValue={setValue}
                   error={errors.exampleOutput?.[index]}
                   onMoveUp={() => swapBlocks(index, index - 1)}
                   onMoveDown={() => swapBlocks(index, index + 1)}
