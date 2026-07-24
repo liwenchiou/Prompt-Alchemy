@@ -21,8 +21,8 @@ export default function AdminLogin() {
   });
 
   const handleQuickFill = () => {
-    setValue("email", "admin@promptalchemy.com");
-    setValue("password", "admin123");
+    setValue("email", "admin@example.com");
+    setValue("password", "Admin1234");
   };
 
   // 通過必填驗證後才進到這裡。
@@ -57,7 +57,7 @@ export default function AdminLogin() {
           onClick={handleQuickFill}
           className="w-full text-xs py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg cursor-pointer transition flex items-center justify-center gap-1.5 font-semibold"
         >
-          ⚡ 點擊快速帶入管理者帳號 (admin@promptalchemy.com)
+          ⚡ 點擊快速帶入管理者帳號 (admin@example.com)
         </button>
 
         {error && (
@@ -105,7 +105,7 @@ export default function AdminLogin() {
         </button>
 
         <p className="text-center text-xs text-gray-400 dark:text-gray-500">
-          測試帳號：admin@promptalchemy.com（密碼：admin123）
+          測試帳號：admin@example.com（密碼：Admin1234）
         </p>
       </form>
     </div>
