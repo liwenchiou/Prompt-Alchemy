@@ -84,33 +84,21 @@ export async function logoutUser() {
 /**
  * 更新個人資料
  */
-export function updateUserProfile(email, data) {
-  const users = storage.get(USERS_KEY) || [];
-  let updated = null;
-  const list = users.map((u) => {
-    if (u.email === email) {
-      updated = {
-        ...u,
-        name: data.name ?? u.name,
-        role: data.role ?? u.role,
-      };
-      return updated;
-    }
-    return u;
+export async function updateUserProfile(email, data) {
+  const res = await apiRequest("/auth/me", {
+    method: "PUT",
+    body: JSON.stringify(data),
   });
-  if (updated) {
-    storage.set(USERS_KEY, list);
-  }
-  return Promise.resolve({
-    email,
-    name: data.name,
-    role: data.role || "member",
-  });
+  return res.user || res.data || { ...data, email };
 }
 
 /**
  * 修改密碼
  */
-export function updateUserPassword(email, currentPassword, newPassword) {
-  return Promise.resolve(true);
+export async function updateUserPassword(email, currentPassword, newPassword) {
+  const res = await apiRequest("/auth/password", {
+    method: "PUT",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  return res.data || true;
 }

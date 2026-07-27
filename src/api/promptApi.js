@@ -61,6 +61,7 @@ function seedSkills() {
 }
 
 function seedParameters() {
+  console.log("SEED PARAMETERS CALLED:\n" + new Error().stack);
   const existing = storage.get(PARAMETERS_KEY);
   if (existing && existing.length > 0 && "is_active" in existing[0]) {
     let updated = false;
@@ -441,25 +442,5 @@ export async function incrementCopyCount(id) {
   }
 
   return true;
-}
-
-export function updateFavoriteCount(id, amount) {
-  const existing = storage.get(SKILLS_KEY) || seedSkills();
-  let found = false;
-  const list = existing.map((s) => {
-    if (s.id === id) {
-      found = true;
-      return { ...s, favorite_count: Math.max(0, (s.favorite_count || 0) + amount) };
-    }
-    return s;
-  });
-  if (!found) {
-    list.push({ id, favorite_count: Math.max(0, amount) });
-  }
-  storage.set(SKILLS_KEY, list);
-  
-  clearPublishedPromptsCache();
-  
-  return Promise.resolve(true);
 }
 
