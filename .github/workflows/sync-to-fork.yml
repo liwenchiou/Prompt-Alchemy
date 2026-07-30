@@ -1,0 +1,23 @@
+name: Auto Sync to Fork (liwenchiou)
+
+on:
+  push:
+    branches:
+      - main # 只要有任何人推送到 colleagues 的 main 分支就會觸發
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 檢出最新程式碼
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 完整抓取所有 Git 歷史與 Commit
+
+      - name: 同步推送至 liwenchiou/Prompt-Alchemy
+        env:
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          # 綁定您的儲存庫為遠端目標並推送
+          git remote add fork https://liwenchiou:${SYNC_TOKEN}@github.com/liwenchiou/Prompt-Alchemy.git
+          git push fork main --force-with-lease
