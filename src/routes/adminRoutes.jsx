@@ -13,7 +13,7 @@ import AdminParameters from "../pages/admin/AdminParameters";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminSkillsView from "../pages/admin/AdminSkillsView";
 import AdminSkillFormManager from "../pages/admin/AdminSkillFormManager";
-import AdminNotFound from "../pages/admin/NotFound";
+import AdminNotFound from "../pages/admin/notFound";
 
 const adminRoutes = {
   path: "/admin",
