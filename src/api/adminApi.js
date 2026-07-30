@@ -119,6 +119,10 @@ function seedUsers() {
 }
 
 function readParameters() {
+  const cachedAll = Object.values(parametersCache).flat();
+  if (cachedAll && cachedAll.length > 0) {
+    return cachedAll;
+  }
   return seedParameters();
 }
 
@@ -167,6 +171,7 @@ function resolve(value) {
 // ---- 統一參數管理 (Parameters CRUD) -------------------------------------------
 
 const parametersCache = {};
+let allParametersLoaded = false;
 
 export function clearParametersCache(type = null) {
   if (type) {
@@ -175,10 +180,23 @@ export function clearParametersCache(type = null) {
     for (const key in parametersCache) {
       delete parametersCache[key];
     }
+    allParametersLoaded = false;
   }
 }
 
 export async function getParametersByType(type) {
+  if (!allParametersLoaded) {
+    try {
+      const result = await apiRequest(`/admin/parameters`);
+      const allList = result.data || [];
+      ["category", "contentType", "model", "tag", "role"].forEach((t) => {
+        parametersCache[t] = allList.filter((item) => item.type === t);
+      });
+      allParametersLoaded = true;
+    } catch (e) {
+      // 發生異常時 fallback 回原本的分次請求
+    }
+  }
   if (parametersCache[type]) {
     return parametersCache[type];
   }
