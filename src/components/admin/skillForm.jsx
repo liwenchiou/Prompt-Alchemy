@@ -13,6 +13,7 @@ import {
   BLOCK_TYPES,
   createEmptyBlock,
   hasMetaFields,
+  isUploadType,
   toBlocks,
   toPayload,
 } from "./exampleOutputBlocks";
@@ -65,7 +66,7 @@ function Label({ children, required }) {
   );
 }
 
-// image / video 區塊的「檔案上傳」欄位，取代原本手貼網址的文字框。
+// image / video / html 區塊的「檔案上傳」欄位，取代原本手貼網址的文字框。
 // 選檔後打 /utility/upload，成功再把回傳的 url 寫進 data.context —— 資料形狀不變，
 // 只是 url 的來源從「手打」變成「上傳」。context 仍以一個 hidden input 註冊，
 // 維持 react-hook-form 的必填驗證；上傳成功後 setValue 會順帶觸發重新驗證。
@@ -74,7 +75,8 @@ function MediaUploadField({ index, type, control, register, setValue, error }) {
   const url = useWatch({ control, name: fieldName });
   const [status, setStatus] = useState("idle"); // idle | uploading | error
   const [uploadError, setUploadError] = useState("");
-  const accept = type === "video" ? "video/*" : "image/*";
+  const accept =
+    type === "video" ? "video/*" : type === "html" ? ".html,text/html" : "image/*";
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
@@ -114,6 +116,14 @@ function MediaUploadField({ index, type, control, register, setValue, error }) {
               src={url}
               controls
               className="max-h-48 w-full rounded object-contain"
+            />
+          ) : type === "html" ? (
+            // 預覽比照前台：一樣用 iframe 開上傳後的網址，sandbox 條件也對齊。
+            <iframe
+              src={url}
+              title="HTML 預覽"
+              className="h-48 w-full rounded border-0 bg-white"
+              sandbox="allow-scripts allow-same-origin"
             />
           ) : (
             <img
@@ -161,8 +171,8 @@ function MediaUploadField({ index, type, control, register, setValue, error }) {
 }
 
 // 範例輸出的單一區塊。type 決定要畫哪些欄位：
-// text / html 只有一個多行的「內容」；image / video 則是「上傳檔案」外加
-// alt / caption 兩個選填欄位。切換 type 時不清空任何欄位，隱藏的值留在表單狀態裡，
+// text 是一個多行的「內容」；image / video / html 都是「上傳檔案」（context 存網址），
+// 其中 image / video 再多 alt / caption 兩個選填欄位。切換 type 時不清空任何欄位，隱藏的值留在表單狀態裡，
 // 由送出時的 toPayload 負責裁掉，避免手滑切錯就把填好的內容弄丟。
 function ExampleOutputBlock({
   index,
@@ -178,7 +188,8 @@ function ExampleOutputBlock({
 }) {
   const type = useWatch({ control, name: `exampleOutput.${index}.type` });
   const withMeta = hasMetaFields(type);
-  const contextLabel = withMeta ? "上傳檔案" : "內容";
+  const withUpload = isUploadType(type);
+  const contextLabel = withUpload ? "上傳檔案" : "內容";
 
   const moveButtonClass =
     "rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800";
@@ -235,7 +246,7 @@ function ExampleOutputBlock({
 
       <div className="space-y-1.5">
         <Label required>{contextLabel}</Label>
-        {withMeta ? (
+        {withUpload ? (
           <MediaUploadField
             index={index}
             type={type}
