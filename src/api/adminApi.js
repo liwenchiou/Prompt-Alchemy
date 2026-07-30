@@ -424,3 +424,30 @@ export async function updateSkill(id, data) {
 export function setSkillActive(id, isActive) {
   return updateSkill(id, { isActive });
 }
+
+// ---- Admin Contacts -----------------------------------------------------------
+
+export async function getAdminContacts(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.append("status", filters.status);
+  if (filters.keyword) params.append("keyword", filters.keyword);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const result = await apiRequest(`/admin/contacts${query}`);
+  return result.data;
+}
+
+export async function updateAdminContactStatus(id, status) {
+  const result = await apiRequest(`/admin/contacts/${id}/status`, {
+    method: "PATCH",
+    body: { status },
+  });
+  return result.data;
+}
+
+export async function deleteAdminContact(id) {
+  const result = await apiRequest(`/admin/contacts/${id}`, {
+    method: "DELETE",
+  });
+  return result.data;
+}

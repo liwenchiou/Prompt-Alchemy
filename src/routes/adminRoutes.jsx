@@ -13,6 +13,7 @@ import AdminParameters from "../pages/admin/AdminParameters";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminSkillsView from "../pages/admin/AdminSkillsView";
 import AdminSkillFormManager from "../pages/admin/AdminSkillFormManager";
+import AdminContacts from "../pages/admin/AdminContacts";
 import AdminNotFound from "../pages/admin/notFound";
 
 const adminRoutes = {
@@ -45,6 +46,10 @@ const adminRoutes = {
               path: "skills",
               element: <AdminSkillsView />,
             },
+            {
+              path: "contacts",
+              element: <AdminContacts />,
+            },
             // 新增與編輯指向同一個元件，靠有沒有 :id 來區分模式。
             {
               path: "skills/new",
@@ -58,6 +63,7 @@ const adminRoutes = {
         },
       ],
     },
+
     {
       path: "*",
       element: <AdminNotFound />,

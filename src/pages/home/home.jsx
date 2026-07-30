@@ -16,6 +16,8 @@ import {
   Languages,
   PocketKnife,
 } from "lucide-react";
+import ContactWidget from "../../components/ContactWidget/contactWidget";
+
 
 export default function Home() {
   const navigate = useNavigate();
@@ -387,6 +389,10 @@ export default function Home() {
           ))}
         </Swiper>
       </section>
+
+      {/* 右下角聯絡我們表單 Widget */}
+      <ContactWidget />
     </div>
   );
 }
+
