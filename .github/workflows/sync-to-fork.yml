@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # 完整抓取所有 Git 歷史與 Commit
+          persist-credentials: false # 關鍵：務必設為 false，避免 Git 記住預設的 github-actions[bot] 導致權限覆蓋
 
       - name: 同步推送至 liwenchiou/Prompt-Alchemy
         env:
