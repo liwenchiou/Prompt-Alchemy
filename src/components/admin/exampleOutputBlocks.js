@@ -18,6 +18,14 @@ export function hasMetaFields(type) {
   return TYPES_WITH_META.includes(type);
 }
 
+// context 存的是「上傳後的檔案網址」而不是使用者手打內容的型別。
+// html 也在內：前台是用 <iframe src={context}> 渲染，吃的是網址不是原始碼。
+const UPLOAD_TYPES = ["image", "video", "html"];
+
+export function isUploadType(type) {
+  return UPLOAD_TYPES.includes(type);
+}
+
 // 表單需要每個欄位都有初始值（否則 input 會從 uncontrolled 變 controlled），
 // 所以這裡一律把 alt / caption 補成空字串，即使該型別用不到。
 function makeBlock(type, context, alt = "", caption = "") {
