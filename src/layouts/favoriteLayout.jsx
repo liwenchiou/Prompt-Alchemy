@@ -3,8 +3,12 @@ import useAuth from "../hooks/useAuth";
 import { alertHelper } from "../utils/sweetAlert";
 
 export default function FavoriteLayout() {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
+
+  if (loading) {
+    return null;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;

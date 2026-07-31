@@ -9,3 +9,5 @@ coverage/
 dist/
 dist.agents
 .agents
+playwright-report/
+test-results/
