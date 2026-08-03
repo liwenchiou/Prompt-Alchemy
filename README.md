@@ -86,14 +86,16 @@ Prompt-Alchemy/
 - **路由機制**：使用 React Router v7 的 `createHashRouter` 以利於直接部署在 GitHub Pages 等靜態託管平台。
 - **樣式系統**：全面採用最新的 Tailwind CSS v4 進行高效率的樣式開發。
 - **防護路由**：使用 `protectedRoute.jsx` 控管後台專屬路由，未授權用戶將自動導回登入頁面。
+- **單元與元件測試**：採用 Vitest 搭配 React Testing Library (`@testing-library/react` & `jest-dom`) 進行 API 邏輯與 React UI 元件的隔離單元測試。
 - **E2E 測試機制**：採用 Playwright 進行前後端真實連線 (Real DB) 測試，自動啟動 WebServer 並驗證真實環境資料庫流轉。
 
 ---
 
 ## Testing
 
-1. **單元測試 (Unit Test)**：
-   - 執行 `npm test` 透過 Vitest 檢查核心邏輯與組件。
+1. **單元與元件測試 (Unit & Component Test)**：
+   - 執行 `npm test` 透過 **Vitest** 搭配 **React Testing Library** 進行測試。
+   - 涵蓋 API 邏輯處理、Mock 資料、核心路由守衛（如 `protectedRoute`）與 UI 元件（如 `PromptCard`）的單元與元件隔離測試。
 
 2. **端到端測試 (E2E Test)**：
    - 本專案使用 **Playwright** 進行包含前後端直連（Real DB API `http://localhost:3000`）的完整自動化瀏覽器測試。
