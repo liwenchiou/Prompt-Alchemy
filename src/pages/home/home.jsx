@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import ContactWidget from "../../components/ContactWidget/contactWidget";
 
-
 export default function Home() {
   const navigate = useNavigate();
 
@@ -36,6 +35,7 @@ export default function Home() {
   const featuredPrompts = [...prompts]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 9);
+  const canLoop = featuredPrompts.length > 3;
 
   const countByCategory = (categoryName) => {
     return prompts.filter((p) => p.category === categoryName).length;
@@ -370,8 +370,8 @@ export default function Home() {
         <Swiper
           className="featured-skills-carousel w-full"
           modules={[A11y, Keyboard, Pagination]}
-          centeredSlides
-          loop={true}
+          centeredSlides={canLoop}
+          loop={canLoop}
           pagination={{ clickable: true, dynamicBullets: true }}
           keyboard={{ enabled: true }}
           spaceBetween={24}
@@ -395,4 +395,3 @@ export default function Home() {
     </div>
   );
 }
-
