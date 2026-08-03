@@ -64,10 +64,24 @@ export default function FavoriteLayout() {
             }
           >
             <span className="text-[16px]/[normal] text-inherit text-left whitespace-nowrap">
-              我的收藏
+              我的收藏-Prompts
             </span>
           </NavLink>
-
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `box-border w-full h-fit shrink-0 flex flex-row gap-0 py-2.5 px-3 justify-start items-start rounded-lg no-underline transition-all ${
+                isActive
+                  ? "bg-[#39FF14] text-[#0A0E1A] font-bold"
+                  : "bg-transparent text-[#7DCEA0] hover:bg-[#39FF14]/10 hover:text-[#39FF14]"
+              }`
+            }
+          >
+            <span className="text-[16px]/[normal] text-inherit text-left whitespace-nowrap">
+              我的收藏-Skills
+            </span>
+          </NavLink>
           <NavLink
             to="/favorites/profile"
             className={({ isActive }) =>

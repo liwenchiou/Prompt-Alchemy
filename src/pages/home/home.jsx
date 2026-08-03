@@ -357,7 +357,7 @@ export default function Home() {
       >
         <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">
           <div className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left m-0">
-            最新技能
+            最新Prompts
           </div>
           <Link
             to="/skills"
@@ -380,7 +380,7 @@ export default function Home() {
             640: { slidesPerView: 2 },
             768: { slidesPerView: 3 },
           }}
-          aria-label="最新技能輪播"
+          aria-label="最新Prompts輪播"
         >
           {featuredPrompts.map((prompt) => (
             <SwiperSlide key={prompt.id} className="h-auto">

@@ -7,14 +7,14 @@ export async function getUserFavoriteAPI() {
     method: "GET",
   });
   const list = Array.isArray(res?.data) ? res.data : [];
-  console.log("用GET拿/favorites:", list.map((item) => item.id));
+  // console.log("用GET拿/favorites:", list.map((item) => item.id));
   return list.map((item) => item.id);
 }
 export async function toggleFavoriteAPI(skillId) {
   const res = await apiRequest(`/favorites/${skillId}/toggle`, {
     method: "POST",
   });
-  console.log("用POST拿/favorites/toggle:", res.data);
+  // console.log("用POST拿/favorites/toggle:", res.data);
   return res.data;
 }
 

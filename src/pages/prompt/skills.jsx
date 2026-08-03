@@ -55,7 +55,7 @@ export default function Skills() {
     getCategories().then((cats) => {
       setCategories([
         { name: "全部", icon: null, memo: "" },
-        { name: "最新技能", icon: null, memo: "" },
+        { name: "最新Prompts", icon: null, memo: "" },
         // { name: "熱門分類", icon: null, memo: "" },
         ...cats.map((c) => ({
           id: c.id,
@@ -99,7 +99,7 @@ export default function Skills() {
   const filteredPrompts = prompts
     .filter((prompt) => {
       // Category filter
-      if (selectedCategory === "最新技能") return prompt.isNew;
+      if (selectedCategory === "最新Prompts") return prompt.isNew;
       if (selectedCategory === "熱門分類") return prompt.isHot;
       if (selectedCategory !== "全部" && prompt.category !== selectedCategory)
         return false;

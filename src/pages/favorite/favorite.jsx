@@ -111,7 +111,7 @@ export default function Favorite() {
             data-pencil-name="Favorites Title"
             className="text-[34px]/[normal] box-border text-[#FFFFFF] font-bold text-left whitespace-nowrap"
           >
-            我的收藏
+            我的收藏-Prompts
           </div>
           <div>
             {favoritePrompts.length > 0 ? (
@@ -138,7 +138,7 @@ export default function Favorite() {
           className="text-[16px]/[normal] box-border text-[#7DCEA0] font-normal text-left whitespace-nowrap"
         >
           {favoritePrompts.length > 0
-            ? `你收藏了 ${favoritePrompts.length} 個 Prompt / Skill`
+            ? `你收藏了 ${favoritePrompts.length} 個 Prompts`
             : "你還沒有收藏任何項目"}
         </div>
       </div>
@@ -262,7 +262,7 @@ export default function Favorite() {
               data-pencil-name="Browse CTA Label"
               className="text-[14px]/[normal] box-border text-[#0A0E1A] font-semibold text-left whitespace-nowrap"
             >
-              前往技能列表
+              前往Prompts列表
             </div>
           </button>
         </div>

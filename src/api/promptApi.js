@@ -61,7 +61,7 @@ function seedSkills() {
 }
 
 function seedParameters() {
-  console.log("SEED PARAMETERS CALLED:\n" + new Error().stack);
+  // console.log("SEED PARAMETERS CALLED:\n" + new Error().stack);
   const existing = storage.get(PARAMETERS_KEY);
   if (existing && existing.length > 0 && "is_active" in existing[0]) {
     let updated = false;
@@ -290,7 +290,7 @@ export function refreshPublishedPrompts() {
 
 export async function getPublishedPrompts(queryParams = {}) {
   const isNoFilter = !queryParams.category && !queryParams.tag && !queryParams.search;
-  
+
   if (isNoFilter && publishedPromptsPromise) {
     return publishedPromptsPromise;
   }
@@ -429,7 +429,7 @@ export async function incrementCopyCount(id) {
     return s;
   });
   storage.set(SKILLS_KEY, list);
-  
+
   clearPublishedPromptsCache();
 
   try {

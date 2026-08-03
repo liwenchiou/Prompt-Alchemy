@@ -51,11 +51,11 @@ export default function Navbar() {
         </Link>
         <Link
           to="/skills"
-          data-pencil-name="Nav 技能列表"
-          aria-label="技能列表"
+          data-pencil-name="Nav Prompts列表"
+          aria-label="Prompts列表"
           className="inline-flex flex-1 lg:flex-none justify-center items-center text-[16px]/[normal] box-border text-[#7DCEA0] hover:text-[#39FF14] transition-colors font-bold text-center whitespace-nowrap no-underline"
         >
-          <span className="hidden sm:inline">技能列表</span>
+          <span className="hidden sm:inline">Prompts列表</span>
           <span className="sm:hidden" aria-hidden="true">
             <ClipboardList size={20} />
           </span>
