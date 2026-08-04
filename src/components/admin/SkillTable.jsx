@@ -3,7 +3,7 @@
 // 不把 promptContent、範例等長內容塞進表格，避免畫面太亂。
 // 資料裡存的是 id，透過 adminApi 的 getXxx 轉成顯示名稱。
 import { useNavigate } from "react-router-dom";
-import StatusBadge from "./statusBadge";
+import StatusBadge from "./StatusBadge";
 import {
   getContentTypeLabel,
   getCategoryName,
