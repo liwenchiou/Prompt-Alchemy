@@ -10,7 +10,7 @@ import {
   parametersTable,
   skillItemsTable,
   usersTable,
-} from "./mockData";
+} from "./mocks/mockData";
 import { apiRequest } from "./apiClient";
 import { clearPublishedPromptsCache } from "./promptApi";
 

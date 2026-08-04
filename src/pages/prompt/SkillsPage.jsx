@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
-import PromptCard from "../../components/PromptCard/promptCard";
+import PromptCard from "../../components/PromptCard/PromptCard";
 import {
   getPublishedPrompts,
   getCategories,

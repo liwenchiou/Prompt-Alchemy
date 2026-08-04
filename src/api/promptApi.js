@@ -1,7 +1,7 @@
 import { apiRequest } from "./apiClient";
 import { storage } from "../utils/storage";
-import { skillItemsTable, parametersTable } from "./mockData";
-import { toBlocks, toPayload } from "../components/admin/exampleOutputBlocks";
+import { skillItemsTable, parametersTable } from "./mocks/mockData";
+import { toBlocks, toPayload } from "../utils/exampleOutputBlocks";
 import { IS_ONLINE_MODE } from "../config/runMode";
 
 const SKILLS_KEY = "admin_skills";

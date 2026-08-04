@@ -4,8 +4,8 @@
 // 真正的表單畫面與欄位驗證則交給 <SkillForm />（新增與編輯共用同一個表單元件）。
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import AdminPageHeader from "../../components/admin/adminPageHeader";
-import SkillForm from "../../components/admin/skillForm";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import SkillForm from "../../components/admin/SkillForm";
 import {
   getParametersByType,
   getSkillById,

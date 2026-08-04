@@ -6,7 +6,7 @@ import {
   getPrompts,
   getPromptById,
   skillItemsTable,
-} from "./mockData";
+} from "../mocks/mockData";
 
 describe("Relational Mock Database Helper Tests", () => {
   describe("getParameterById", () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import PromptCard from "../../components/PromptCard/promptCard";
+import PromptCard from "../../components/PromptCard/PromptCard";
 import {
   getPublishedPrompts,
   getTags,

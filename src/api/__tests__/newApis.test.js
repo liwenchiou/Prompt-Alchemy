@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { getPublishedPrompts, getPromptById, incrementCopyCount, normalizeExampleOutput, clearPublishedPromptsCache } from "./promptApi";
-import { loginUser, registerUser } from "./authApi";
-import { getUserFavorites, saveUserFavorites } from "./favoriteApi";
+import { getPublishedPrompts, getPromptById, incrementCopyCount, normalizeExampleOutput, clearPublishedPromptsCache } from "../promptApi";
+import { loginUser, registerUser } from "../authApi";
+import { getUserFavorites, saveUserFavorites } from "../favoriteApi";
 
 const { mockUsers, mockApiShouldFail, mockPromptState } = vi.hoisted(() => {
   return {
@@ -16,7 +16,7 @@ const { mockUsers, mockApiShouldFail, mockPromptState } = vi.hoisted(() => {
   };
 });
 
-vi.mock("./apiClient", () => {
+vi.mock("../apiClient", () => {
   return {
     apiRequest: vi.fn(async (endpoint, options = {}) => {
       if (mockApiShouldFail.value) {
@@ -278,13 +278,13 @@ describe("New Frontend Dynamic Mock APIs Tests", () => {
     });
 
     it("should update user profile via PUT /auth/me", async () => {
-      const { updateUserProfile } = await import("./authApi");
+      const { updateUserProfile } = await import("../authApi");
       const result = await updateUserProfile("test@example.com", { name: "New Name" });
       expect(result.name).toBe("New Name");
     });
 
     it("should update user password via PUT /auth/password", async () => {
-      const { updateUserPassword } = await import("./authApi");
+      const { updateUserPassword } = await import("../authApi");
       const result = await updateUserPassword("test@example.com", "oldPass", "newPass");
       expect(result).toBe(true);
     });

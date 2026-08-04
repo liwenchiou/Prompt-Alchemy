@@ -4,9 +4,9 @@ import { A11y, Keyboard, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import PromptCard from "../../components/PromptCard/promptCard";
+import PromptCard from "../../components/PromptCard/PromptCard";
 import { getPublishedPrompts } from "../../api/promptApi";
-import HeroDevice from "../../components/HeroDevice/heroDevice";
+import HeroDevice from "../../components/HeroDevice/HeroDevice";
 import { usePageLoading } from "../../hooks/usePageLoading";
 import {
   CodeXml,
@@ -16,7 +16,7 @@ import {
   Languages,
   PocketKnife,
 } from "lucide-react";
-import ContactWidget from "../../components/ContactWidget/contactWidget";
+import ContactWidget from "../../components/ContactWidget/ContactWidget";
 
 export default function Home() {
   const navigate = useNavigate();

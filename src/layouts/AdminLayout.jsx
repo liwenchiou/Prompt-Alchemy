@@ -1,7 +1,7 @@
 // 後台共用版型：左側固定側邊欄 + 右側內容區。
 // 各後台頁面透過 <Outlet /> 顯示在右側；頁面內各自用 <AdminPageHeader /> 放標題與操作鈕。
 import { Outlet } from "react-router-dom";
-import AdminSidebar from "../components/admin/adminSidebar";
+import AdminSidebar from "../components/admin/AdminSidebar";
 
 export default function AdminLayout() {
   return (

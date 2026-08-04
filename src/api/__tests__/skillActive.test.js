@@ -6,13 +6,13 @@ import {
   setSkillActive,
   getSkillById,
   loginAdmin,
-} from "./adminApi";
-import { getPublishedPrompts } from "./promptApi";
-import { skillItemsTable, getParameterName } from "./mockData";
+} from "../adminApi";
+import { getPublishedPrompts } from "../promptApi";
+import { skillItemsTable, getParameterName } from "../mocks/mockData";
 
 let mockBackendSkills = [];
 
-vi.mock("./apiClient", () => {
+vi.mock("../apiClient", () => {
   return {
     apiRequest: vi.fn(async (endpoint, options = {}) => {
       const method = options.method || "GET";

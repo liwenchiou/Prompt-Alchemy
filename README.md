@@ -64,18 +64,24 @@ Prompt-Alchemy/
 │   └── 06-admin-crud.spec.js # 後台技能、系統參數與聯絡紀錄管理
 ├── src/
 │   ├── api/          # Axios 實例與 API 串接邏輯（如 authApi.js, promptApi.js）
-│   ├── components/   # 全域可複用 UI 組件
-│   ├── context/      # React Context 狀態管理（AuthContext, LoadingContext）
-│   ├── hooks/        # 自定義 React Hooks
-│   ├── layouts/      # 頁面版型佈局（HomeLayout, FavoriteLayout, AdminLayout）
-│   ├── pages/        # 主要路由頁面
-│   │   ├── admin/    # 後台管理頁面（儀表板、參數、使用者、提示詞 CRUD）
-│   │   ├── favorite/ # 使用者收藏、個人資料、密碼變更頁面
-│   │   ├── home/     # 前台首頁
-│   │   └── prompt/   # 提示詞技能列表與詳細資訊頁面
-│   ├── routes/       # 路由配置（包含 ProtectedRoute 登入防護）
+│   │   ├── mocks/    # 靜態 Mock 資料 (mockData.js)
+│   │   └── __tests__/ # API 邏輯單元測試檔
+│   ├── components/   # React UI 組件（採 PascalCase 命名，如 Navbar.jsx, PromptCard.jsx）
+│   │   └── admin/    # 後台專屬組件（AdminSidebar.jsx, SkillForm.jsx...）
+│   ├── context/      # React Context 狀態管理（AuthContext.jsx, LoadingContext.jsx）
+│   ├── hooks/        # 自定義 React Hooks（useAuth.js, usePageLoading.js...）
+│   ├── layouts/      # 頁面版型佈局（HomeLayout.jsx, FavoriteLayout.jsx, AdminLayout.jsx）
+│   ├── pages/        # 主要路由頁面（PascalCase 命名）
+│   │   ├── admin/    # 後台管理頁面（AdminDashboard.jsx, AdminSkillsView.jsx...）
+│   │   ├── favorite/ # 使用者收藏與個人資料頁面（FavoritePage.jsx, ProfilePage.jsx...）
+│   │   ├── home/     # 前台首頁（HomePage.jsx）
+│   │   ├── member/   # 會員登入與註冊頁面（LoginPage.jsx, RegisterPage.jsx）
+│   │   ├── prompt/   # 提示詞技能列表與詳細資訊頁面（SkillsPage.jsx, SkillDetailPage.jsx）
+│   │   └── NotFoundPage.jsx
+│   ├── routes/       # 路由配置（AdminRoutes.jsx, ProtectedRoute.jsx 防護機制）
 │   ├── styles/       # 全域與元件樣式檔案（整合 Tailwind CSS v4）
-│   └── utils/        # 通用工具函式
+│   └── utils/        # 通用工具函式與單元測試
+│       └── __tests__/
 ├── eslint.config.js  # ESLint 檢查配置
 ├── playwright.config.js # Playwright E2E 測試配置檔
 ├── vite.config.js    # Vite 設定檔
@@ -83,9 +89,10 @@ Prompt-Alchemy/
 ```
 
 ### 關鍵設計決策
+- **檔案規範與目錄結構**：全站 React 組件（Component / Page / Layout / Route）統一採用首字大寫 PascalCase 命名規範；非 UI 工具邏輯、Mock 資料與測試檔依權責劃分至 `utils/`, `api/mocks/` 與 `__tests__/` 資料夾中。
 - **路由機制**：使用 React Router v7 的 `createHashRouter` 以利於直接部署在 GitHub Pages 等靜態託管平台。
 - **樣式系統**：全面採用最新的 Tailwind CSS v4 進行高效率的樣式開發。
-- **防護路由**：使用 `protectedRoute.jsx` 控管後台專屬路由，未授權用戶將自動導回登入頁面。
+- **防護路由**：使用 `ProtectedRoute.jsx` 控管後台專屬路由，未授權用戶將自動導回登入頁面。
 - **單元與元件測試**：採用 Vitest 搭配 React Testing Library (`@testing-library/react` & `jest-dom`) 進行 API 邏輯與 React UI 元件的隔離單元測試。
 - **E2E 測試機制**：採用 Playwright 進行前後端真實連線 (Real DB) 測試，自動啟動 WebServer 並驗證真實環境資料庫流轉。
 
@@ -95,7 +102,7 @@ Prompt-Alchemy/
 
 1. **單元與元件測試 (Unit & Component Test)**：
    - 執行 `npm test` 透過 **Vitest** 搭配 **React Testing Library** 進行測試。
-   - 涵蓋 API 邏輯處理、Mock 資料、核心路由守衛（如 `protectedRoute`）與 UI 元件（如 `PromptCard`）的單元與元件隔離測試。
+   - 涵蓋 API 邏輯處理、Mock 資料、核心路由守衛（如 `ProtectedRoute`）與 UI 元件（如 `PromptCard`）的單元與元件隔離測試。
 
 2. **端到端測試 (E2E Test)**：
    - 本專案使用 **Playwright** 進行包含前後端直連（Real DB API `http://localhost:3000`）的完整自動化瀏覽器測試。
