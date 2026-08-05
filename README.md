@@ -67,6 +67,7 @@ Prompt-Alchemy/
 │   │   ├── mocks/    # 靜態 Mock 資料 (mockData.js)
 │   │   └── __tests__/ # API 邏輯單元測試檔
 │   ├── components/   # React UI 組件（採 PascalCase 命名，如 Navbar.jsx, PromptCard.jsx）
+│   │   ├── ErrorBoundary/ # 全域錯誤邊界組件 (ErrorBoundary.jsx)
 │   │   └── admin/    # 後台專屬組件（AdminSidebar.jsx, SkillForm.jsx...）
 │   ├── context/      # React Context 狀態管理（AuthContext.jsx, LoadingContext.jsx）
 │   ├── hooks/        # 自定義 React Hooks（useAuth.js, usePageLoading.js...）
@@ -80,7 +81,7 @@ Prompt-Alchemy/
 │   │   └── NotFoundPage.jsx
 │   ├── routes/       # 路由配置（AdminRoutes.jsx, ProtectedRoute.jsx 防護機制）
 │   ├── styles/       # 全域與元件樣式檔案（整合 Tailwind CSS v4）
-│   └── utils/        # 通用工具函式與單元測試
+│   └── utils/        # 通用工具函式（storage.js, eventBus.js...）與單元測試
 │       └── __tests__/
 ├── eslint.config.js  # ESLint 檢查配置
 ├── playwright.config.js # Playwright E2E 測試配置檔
@@ -92,8 +93,10 @@ Prompt-Alchemy/
 - **檔案規範與目錄結構**：全站 React 組件（Component / Page / Layout / Route）統一採用首字大寫 PascalCase 命名規範；非 UI 工具邏輯、Mock 資料與測試檔依權責劃分至 `utils/`, `api/mocks/` 與 `__tests__/` 資料夾中。
 - **路由機制**：使用 React Router v7 的 `createHashRouter` 以利於直接部署在 GitHub Pages 等靜態託管平台。
 - **樣式系統**：全面採用最新的 Tailwind CSS v4 進行高效率的樣式開發。
-- **防護路由**：使用 `ProtectedRoute.jsx` 控管後台專屬路由，未授權用戶將自動導回登入頁面。
-- **單元與元件測試**：採用 Vitest 搭配 React Testing Library (`@testing-library/react` & `jest-dom`) 進行 API 邏輯與 React UI 元件的隔離單元測試。
+- **防護路由與錯誤邊界**：使用 `ProtectedRoute.jsx` 控管後台專屬路由，並以全域 `<ErrorBoundary>` 捕捉 UI 異常呈現備用畫面；搭配 API Interceptor 在 401 Unauthorized 時自動清除 Token 與登出。
+- **解耦 Event Bus 機制**：建立獨立輕量級 `eventBus.js` 模組，處理跨組件與 API 的非對稱發佈/訂閱（例如技能更新廣播與登入逾期通知），避免全域 `window` 事件污染。
+- **無障礙 (a11y) 與語意化標準**：核心互動組件（如 `PromptCard.jsx`）皆補全 `aria-label`、`aria-pressed`、`role="button"`、`tabIndex` 與鍵盤 (`Enter`/`Space`) 互動支援。
+- **單元與元件測試**：採用 Vitest 搭配 React Testing Library (`@testing-library/react` & `jest-dom`) 進行 API 邏輯、EventBus、ErrorBoundary 與 React UI 元件的 12 隻單元測試檔（75 個案例）。
 - **E2E 測試機制**：採用 Playwright 進行前後端真實連線 (Real DB) 測試，自動啟動 WebServer 並驗證真實環境資料庫流轉。
 
 ---
@@ -102,7 +105,7 @@ Prompt-Alchemy/
 
 1. **單元與元件測試 (Unit & Component Test)**：
    - 執行 `npm test` 透過 **Vitest** 搭配 **React Testing Library** 進行測試。
-   - 涵蓋 API 邏輯處理、Mock 資料、核心路由守衛（如 `ProtectedRoute`）與 UI 元件（如 `PromptCard`）的單元與元件隔離測試。
+   - 涵蓋 API 邏輯處理、Mock 資料、`eventBus` 廣播、`ErrorBoundary` 崩潰攔截、核心路由守衛（如 `ProtectedRoute`）與 UI 元件（如 `PromptCard`）共 12 隻測試檔（75 個單元測試案例）。
 
 2. **端到端測試 (E2E Test)**：
    - 本專案使用 **Playwright** 進行包含前後端直連（Real DB API `http://localhost:3000`）的完整自動化瀏覽器測試。

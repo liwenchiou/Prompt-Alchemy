@@ -3,6 +3,7 @@ import { storage } from "../utils/storage";
 import { skillItemsTable, parametersTable } from "./mocks/mockData";
 import { toBlocks, toPayload } from "../utils/exampleOutputBlocks";
 import { IS_ONLINE_MODE } from "../config/runMode";
+import { eventBus } from "../utils/eventBus";
 
 const SKILLS_KEY = "admin_skills";
 const PARAMETERS_KEY = "admin_parameters";
@@ -283,6 +284,7 @@ export const PUBLISHED_PROMPTS_UPDATED_EVENT = "prompt-alchemy:prompts-updated";
 
 export function refreshPublishedPrompts() {
   clearPublishedPromptsCache();
+  eventBus.emit(PUBLISHED_PROMPTS_UPDATED_EVENT);
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(PUBLISHED_PROMPTS_UPDATED_EVENT));
   }
