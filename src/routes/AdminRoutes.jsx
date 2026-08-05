@@ -14,6 +14,7 @@ import AdminUsers from "../pages/admin/AdminUsers";
 import AdminSkillsView from "../pages/admin/AdminSkillsView";
 import AdminSkillFormManager from "../pages/admin/AdminSkillFormManager";
 import AdminContacts from "../pages/admin/AdminContacts";
+import AdminFaqs from "../pages/admin/AdminFaqs";
 import AdminNotFound from "../pages/NotFoundPage";
 
 const adminRoutes = {
@@ -45,6 +46,10 @@ const adminRoutes = {
             {
               path: "skills",
               element: <AdminSkillsView />,
+            },
+            {
+              path: "faqs",
+              element: <AdminFaqs />,
             },
             {
               path: "contacts",

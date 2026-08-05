@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/admin/parameters", label: "參數管理", icon: "🗂️" },
   { to: "/admin/users", label: "會員管理", icon: "👥" },
   { to: "/admin/skills", label: "Prompt / Skill 管理", icon: "📝" },
+  { to: "/admin/faqs", label: "FAQ 管理", icon: "❓" },
   { to: "/admin/contacts", label: "聯絡表單管理", icon: "📬" },
 ];
 
