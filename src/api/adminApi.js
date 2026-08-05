@@ -451,3 +451,119 @@ export async function deleteAdminContact(id) {
   });
   return result.data;
 }
+
+// ---- Admin FAQs ---------------------------------------------------------------
+
+function normalizeAdminFaq(item) {
+  if (
+    typeof item?.id !== "string" ||
+    typeof item?.question !== "string" ||
+    typeof item?.answer !== "string" ||
+    !Number.isInteger(item?.sortOrder) ||
+    typeof item?.isActive !== "boolean" ||
+    typeof item?.createdAt !== "string" ||
+    typeof item?.updatedAt !== "string"
+  ) {
+    throw new Error("FAQ 管理資料格式錯誤");
+  }
+
+  return {
+    id: item.id,
+    question: item.question,
+    answer: item.answer,
+    sortOrder: item.sortOrder,
+    isActive: item.isActive,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+}
+
+function normalizeAdminFaqPayload(data, partial = false) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("FAQ 資料格式錯誤");
+  }
+
+  const payload = {};
+  const hasOwn = (field) => Object.prototype.hasOwnProperty.call(data, field);
+
+  for (const field of ["question", "answer"]) {
+    if (!partial || hasOwn(field)) {
+      if (typeof data[field] !== "string" || data[field].trim() === "") {
+        throw new Error(`${field} 為必填且不可為空白`);
+      }
+      payload[field] = data[field].trim();
+    }
+  }
+
+  if (!partial || hasOwn("sortOrder")) {
+    const rawSortOrder = hasOwn("sortOrder") ? data.sortOrder : 0;
+    if (
+      rawSortOrder === null ||
+      (typeof rawSortOrder === "string" && rawSortOrder.trim() === "")
+    ) {
+      throw new Error("sortOrder 必須是大於或等於 0 的整數");
+    }
+    const sortOrder =
+      typeof rawSortOrder === "number" ? rawSortOrder : Number(rawSortOrder);
+    if (!Number.isInteger(sortOrder) || sortOrder < 0) {
+      throw new Error("sortOrder 必須是大於或等於 0 的整數");
+    }
+    payload.sortOrder = sortOrder;
+  }
+
+  if (!partial || hasOwn("isActive")) {
+    const isActive = hasOwn("isActive") ? data.isActive : true;
+    if (typeof isActive !== "boolean") {
+      throw new Error("isActive 必須是 boolean");
+    }
+    payload.isActive = isActive;
+  }
+
+  if (partial && Object.keys(payload).length === 0) {
+    throw new Error("沒有可更新的 FAQ 欄位");
+  }
+
+  return payload;
+}
+
+function getAdminFaqResult(result) {
+  if (result?.status !== "success" || !result.data) {
+    throw new Error("FAQ 管理回應格式錯誤");
+  }
+  return normalizeAdminFaq(result.data);
+}
+
+export async function getAdminFaqs() {
+  const result = await apiRequest("/admin/faqs/", { method: "GET" });
+  if (result?.status !== "success" || !Array.isArray(result.data)) {
+    throw new Error("FAQ 管理清單回應格式錯誤");
+  }
+  return result.data.map(normalizeAdminFaq);
+}
+
+export async function createAdminFaq(data) {
+  const result = await apiRequest("/admin/faqs/", {
+    method: "POST",
+    body: normalizeAdminFaqPayload(data),
+  });
+  return getAdminFaqResult(result);
+}
+
+export async function updateAdminFaq(id, data) {
+  const result = await apiRequest(`/admin/faqs/${id}`, {
+    method: "PUT",
+    body: normalizeAdminFaqPayload(data, true),
+  });
+  return getAdminFaqResult(result);
+}
+
+export async function disableAdminFaq(id) {
+  const result = await apiRequest(`/admin/faqs/${id}`, {
+    method: "DELETE",
+  });
+  return getAdminFaqResult(result);
+}
+
+export function restoreAdminFaq(id) {
+  return updateAdminFaq(id, { isActive: true });
+}
