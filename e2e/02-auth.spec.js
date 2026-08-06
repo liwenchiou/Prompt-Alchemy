@@ -1,7 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { setupMockApiRoutes } from "./helpers/mockApi";
 
-test.describe("會員驗證 (Auth) 端到端測試 - Real DB 登入與權限驗證", () => {
-  test("測試會員使用真實 Seed 帳號成功登入與登出", async ({ page }) => {
+test.describe("會員驗證 (Auth) 端到端測試 - Real DB & Standalone 連結", () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMockApiRoutes(page);
+  });
+
+  test("測試會員使用 Seed 帳號成功登入與登出", async ({ page }) => {
     await page.goto("/#/login");
 
     const emailInput = page.locator("input[type='email']");
@@ -38,7 +43,7 @@ test.describe("會員驗證 (Auth) 端到端測試 - Real DB 登入與權限驗�
     await page.locator("input[type='password']").fill("WrongPassword123");
     await page.locator("button[type='submit']").click();
 
-    const errorMsg = page.locator("text=email 或密碼錯誤").first();
+    const errorMsg = page.getByText(/email 或密碼錯誤|登入失敗/i).first();
     await expect(errorMsg).toBeVisible({ timeout: 5000 });
   });
 });

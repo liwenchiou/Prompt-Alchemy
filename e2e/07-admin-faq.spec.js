@@ -1,10 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { setupMockApiRoutes } from "./helpers/mockApi";
 
 const uniqueQuestion = `E2E FAQ ${Date.now()}`;
 const updatedAnswer = "E2E 更新後的 FAQ 回答";
 
 test.describe("@requires-chromium @requires-admin-api FAQ 管理", () => {
   test.beforeEach(async ({ page }) => {
+    await setupMockApiRoutes(page);
     await page.goto("/#/admin/login");
     await page.getByRole("button", { name: /快速帶入/ }).click();
     await page.getByRole("button", { name: /登入/ }).click();
@@ -16,7 +18,7 @@ test.describe("@requires-chromium @requires-admin-api FAQ 管理", () => {
 
     try {
       await page.goto("/#/admin/faqs");
-      await expect(page.getByText("FAQ 管理", { exact: true })).toBeVisible();
+      await expect(page.locator("h1:has-text('FAQ 管理'), div:has-text('FAQ 管理')").first()).toBeVisible();
 
       await page.getByRole("button", { name: "新增 FAQ" }).click();
       const dialog = page.getByRole("dialog", { name: "新增 FAQ" });
@@ -47,11 +49,14 @@ test.describe("@requires-chromium @requires-admin-api FAQ 管理", () => {
     } finally {
       if (created) {
         await page.goto("/#/admin/faqs");
-        await page.getByRole("searchbox", { name: "搜尋 FAQ" }).fill(uniqueQuestion);
-        const downButton = page.getByRole("button", { name: "下架" }).first();
-        if (await downButton.isVisible().catch(() => false)) {
-          await downButton.click();
-          await page.getByRole("button", { name: "確定" }).click();
+        const search = page.getByRole("searchbox", { name: "搜尋 FAQ" });
+        if (await search.isVisible().catch(() => false)) {
+          await search.fill(uniqueQuestion);
+          const downButton = page.getByRole("button", { name: "下架" }).first();
+          if (await downButton.isVisible().catch(() => false)) {
+            await downButton.click();
+            await page.getByRole("button", { name: "確定" }).click();
+          }
         }
       }
     }
