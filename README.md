@@ -1,6 +1,6 @@
 # Prompt Alchemy
 
-Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的 AI 提示詞（Prompt）與技能（Skill）管理平台。本專案提供直覺的前台介面供使用者瀏覽、搜尋、測試並收藏各式精心設計的 AI 提示詞；同時內建完整的後台管理系統，利於管理員維護系統參數、使用者資料以及提示詞目錄。
+Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的 AI 提示詞（Prompt）與技能（Skill）管理平台。本專案提供直覺的前台介面供使用者瀏覽、搜尋、測試、檢視常見問題（FAQ）並收藏各式精心設計的 AI 提示詞；同時內建完整的後台管理系統，便於管理員維護提示詞技能目錄、常見問題（FAQ）、使用者帳號權限、系統參數以及聯絡訊息紀錄。
 
 ## Quick Start
 
@@ -16,7 +16,7 @@ Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的 AI 
    ```
 
 3. **設定環境變數**：
-   複製 `.env.example` 並重新命名為 `.env`（或 `.env.development`），並填入您的後端 API 位置：
+   複製 `.env.example` 並重新命名為 `.env`（或 `.env.development`），填入您的後端 API 位置：
    ```bash
    cp .env.example .env
    ```
@@ -39,13 +39,13 @@ Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的 AI 
 |------|------|
 | `npm run dev` | 啟動本地 Vite 開發伺服器 (`http://localhost:5173`) |
 | `npm run build` | 建置用於生產環境的靜態資源（輸出至 `dist/`） |
-| `npm run preview`| 在本地預覽生產環境的建置結果 |
+| `npm run preview` | 在本地預覽生產環境的建置結果 |
 | `npm run lint` | 執行 ESLint 語法檢查與排版驗證 |
-| `npm test` | 執行 Vitest 進行單元測試 |
-| `npm run test:e2e` | 執行 Playwright 全套端到端 (E2E) 測試 |
-| `npm run test:e2e:ui` | 開啟 Playwright UI 圖像化介面進行 E2E 測試除錯 |
-| `npm run test:e2e:report` | 檢視 Playwright HTML 測試報告 |
-| `npm run deploy` | 將建置結果發布至 GitHub Pages 託管 |
+| `npm test` | 執行 Vitest 進行單元與元件測試（19 隻測試檔，108 個測試案例 100% 通過） |
+| `npm run test:e2e` | 執行 Playwright 全套端到端 (E2E) 自動化測試（9 隻測試檔） |
+| `npm run test:e2e:ui` | 開啟 Playwright UI 圖像化介面進行 E2E 測試與除錯 |
+| `npm run test:e2e:report` | 檢視 Playwright HTML 端到端測試報告 |
+| `npm run deploy` | 將建置結果自動發布至 GitHub Pages 託管 |
 
 ---
 
@@ -55,49 +55,62 @@ Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的 AI 
 
 ```
 Prompt-Alchemy/
-├── e2e/              # Playwright 端到端 (E2E) 測試腳本
-│   ├── 01-homepage.spec.js   # 首頁列表、搜尋與 Prompt Card Modal
-│   ├── 02-auth.spec.js       # 會員登入/登出與錯誤處理
-│   ├── 03-favorites.spec.js  # 我的收藏頁面與 Real DB 同步
-│   ├── 04-feedback.spec.js   # 意見回饋表單提交
-│   ├── 05-admin-auth.spec.js # 後台登入與 ProtectedRoute 權限阻擋
-│   └── 06-admin-crud.spec.js # 後台技能、系統參數與聯絡紀錄管理
+├── docs/                 # 系統架構說明與 API 規格文件檔
+├── e2e/                  # Playwright 端到端 (E2E) 自動化測試腳本 (9 隻測試檔)
+│   ├── 01-homepage.spec.js   # 首頁列表、搜尋、分類選單、FAQSection 展開與 Modal 視窗
+│   ├── 02-auth.spec.js       # 會員登入/登出驗證與錯誤處理
+│   ├── 03-favorites.spec.js  # 使用者收藏庫與 Real DB 同步
+│   ├── 04-feedback.spec.js   # 意見回饋與聯絡表單提交
+│   ├── 05-admin-auth.spec.js # 後台登入與 ProtectedRoute 權限阻擋機制
+│   ├── 06-admin-crud.spec.js # 後台技能、系統參數與聯絡紀錄管理
+│   ├── 07-admin-faq.spec.js  # 後台 FAQ 管理流程（CRUD、狀態切換、排序與分頁）
+│   ├── 08-admin-users.spec.js# 後台使用者帳號與權限資料管理
+│   └── 09-skill-detail.spec.js# 技能詳細資訊頁面與互動測試
 ├── src/
-│   ├── api/          # Axios 實例與 API 串接邏輯（如 authApi.js, promptApi.js）
-│   │   ├── mocks/    # 靜態 Mock 資料 (mockData.js)
-│   │   └── __tests__/ # API 邏輯單元測試檔
-│   ├── components/   # React UI 組件（採 PascalCase 命名，如 Navbar.jsx, PromptCard.jsx）
-│   │   ├── ErrorBoundary/ # 全域錯誤邊界組件 (ErrorBoundary.jsx)
-│   │   └── admin/    # 後台專屬組件（AdminSidebar.jsx, SkillForm.jsx...）
-│   ├── context/      # React Context 狀態管理（AuthContext.jsx, LoadingContext.jsx）
-│   ├── hooks/        # 自定義 React Hooks（useAuth.js, usePageLoading.js...）
-│   ├── layouts/      # 頁面版型佈局（HomeLayout.jsx, FavoriteLayout.jsx, AdminLayout.jsx）
-│   ├── pages/        # 主要路由頁面（PascalCase 命名）
-│   │   ├── admin/    # 後台管理頁面（AdminDashboard.jsx, AdminSkillsView.jsx...）
-│   │   ├── favorite/ # 使用者收藏與個人資料頁面（FavoritePage.jsx, ProfilePage.jsx...）
-│   │   ├── home/     # 前台首頁（HomePage.jsx）
-│   │   ├── member/   # 會員登入與註冊頁面（LoginPage.jsx, RegisterPage.jsx）
-│   │   ├── prompt/   # 提示詞技能列表與詳細資訊頁面（SkillsPage.jsx, SkillDetailPage.jsx）
+│   ├── api/              # Axios 實例與 RESTful API 串接模組
+│   │   ├── adminApi.js   # 後台技能、FAQ、使用者、系統參數與聯絡訊息 API
+│   │   ├── authApi.js    # 會員與管理者身份驗證 API
+│   │   ├── contactApi.js # 前台聯絡表單 API
+│   │   ├── faqApi.js     # 前台 FAQ 清單取得 API
+│   │   ├── favoriteApi.js# 提示詞收藏同步 API
+│   │   ├── promptApi.js  # 前台 Prompt/Skill 查詢 API
+│   │   ├── uploadApi.js  # 檔案與圖片上傳 API
+│   │   ├── mocks/        # 靜態 Mock 資料 (mockData.js)
+│   │   └── __tests__/    # API 邏輯與串接單元測試檔
+│   ├── components/       # React UI 組件（採 PascalCase 命名）
+│   │   ├── ErrorBoundary/# 全域錯誤邊界組件 (ErrorBoundary.jsx)
+│   │   ├── FAQSection/   # 前台常見問題手風琴組件 (FAQSection.jsx)
+│   │   ├── PromptCard/   # 提示詞卡片與詳情 Modal (PromptCard.jsx)
+│   │   └── admin/        # 後台專屬組件（AdminSidebar, FaqFormModal, UserFormModal, SkillForm, SkillTable, ParameterFormModal, StatusBadge 等）
+│   ├── context/          # React Context 狀態管理（AuthContext.jsx, LoadingContext.jsx）
+│   ├── hooks/            # 自定義 React Hooks（useAuth.js, usePageLoading.js 等）
+│   ├── layouts/          # 頁面版型佈局（HomeLayout.jsx, FavoriteLayout.jsx, AdminLayout.jsx）
+│   ├── pages/            # 主要路由頁面
+│   │   ├── admin/        # 後台管理頁面（AdminDashboard, AdminSkillsView, AdminSkillFormManager, AdminFaqs, AdminUsers, AdminParameters, AdminContacts, AdminLogin）
+│   │   ├── favorite/     # 使用者收藏與個人資料頁面（FavoritePage, ProfilePage, PasswordPage）
+│   │   ├── home/         # 前台首頁（HomePage.jsx）
+│   │   ├── member/       # 會員登入與註冊頁面（LoginPage, RegisterPage）
+│   │   ├── prompt/       # 提示詞技能列表與詳細資訊頁面（SkillsPage, SkillDetailPage）
 │   │   └── NotFoundPage.jsx
-│   ├── routes/       # 路由配置（AdminRoutes.jsx, ProtectedRoute.jsx 防護機制）
-│   ├── styles/       # 全域與元件樣式檔案（整合 Tailwind CSS v4）
-│   └── utils/        # 通用工具函式（storage.js, eventBus.js...）與單元測試
-│       └── __tests__/
-├── eslint.config.js  # ESLint 檢查配置
-├── playwright.config.js # Playwright E2E 測試配置檔
-├── vite.config.js    # Vite 設定檔
-└── vitest.config.js  # Vitest 單元測試配置檔
+│   ├── routes/           # 路由配置（index.jsx, AdminRoutes.jsx, ProtectedRoute.jsx 權限防護）
+│   ├── styles/           # 全域樣式與 Tailwind CSS v4 配置
+│   └── utils/            # 通用工具函式 (storage.js, eventBus.js, tagStyles.js, exampleOutputBlocks.js 等)
+├── eslint.config.js      # ESLint 檢查配置
+├── playwright.config.js  # Playwright E2E 測試配置檔
+├── vite.config.js        # Vite 構建設定檔
+└── vitest.config.js      # Vitest 單元測試配置檔
 ```
 
 ### 關鍵設計決策
-- **檔案規範與目錄結構**：全站 React 組件（Component / Page / Layout / Route）統一採用首字大寫 PascalCase 命名規範；非 UI 工具邏輯、Mock 資料與測試檔依權責劃分至 `utils/`, `api/mocks/` 與 `__tests__/` 資料夾中。
-- **路由機制**：使用 React Router v7 的 `createHashRouter` 以利於直接部署在 GitHub Pages 等靜態託管平台。
-- **樣式系統**：全面採用最新的 Tailwind CSS v4 進行高效率的樣式開發。
-- **防護路由與錯誤邊界**：使用 `ProtectedRoute.jsx` 控管後台專屬路由，並以全域 `<ErrorBoundary>` 捕捉 UI 異常呈現備用畫面；搭配 API Interceptor 在 401 Unauthorized 時自動清除 Token 與登出。
+
+- **檔案規範與目錄結構**：全站 React 組件（Component / Page / Layout / Route）統一採用首字大寫 PascalCase 命名規範；非 UI 工具邏輯、Mock 資料與測試檔依權責劃分至 `utils/`, `api/` 與相應 `__tests__/` 資料夾中。
+- **路由機制**：使用 React Router v7 的 `createHashRouter`，完美相容 GitHub Pages 等靜態託管平台。
+- **樣式系統**：全面採用最新的 Tailwind CSS v4 進行高效、響應式的現代化 UI 開發。
+- **防護路由與錯誤邊界**：採用 `ProtectedRoute.jsx` 嚴格控管後台專屬路由，並配合全域 `<ErrorBoundary>` 捕捉 UI 渲染異常呈現優雅備用畫面；搭配 API Client Interceptor 於 `401 Unauthorized` 時自動清除 Token 並跳轉登入頁。
 - **解耦 Event Bus 機制**：建立獨立輕量級 `eventBus.js` 模組，處理跨組件與 API 的非對稱發佈/訂閱（例如技能更新廣播與登入逾期通知），避免全域 `window` 事件污染。
-- **無障礙 (a11y) 與語意化標準**：核心互動組件（如 `PromptCard.jsx`）皆補全 `aria-label`、`aria-pressed`、`role="button"`、`tabIndex` 與鍵盤 (`Enter`/`Space`) 互動支援。
-- **單元與元件測試**：採用 Vitest 搭配 React Testing Library (`@testing-library/react` & `jest-dom`) 進行 API 邏輯、EventBus、ErrorBoundary 與 React UI 元件的 12 隻單元測試檔（75 個案例）。
-- **E2E 測試機制**：採用 Playwright 進行前後端真實連線 (Real DB) 測試，自動啟動 WebServer 並驗證真實環境資料庫流轉。
+- **無障礙 (a11y) 與語意化標準**：核心互動組件（如 `PromptCard.jsx`、`FAQSection.jsx` 與 `FaqFormModal.jsx`）皆完整實作 `aria-expanded`、`aria-controls`、`aria-label`、`role="dialog"` 與鍵盤 (`Tab` / `Enter` / `Space`) 互動支援。
+- **單元與元件測試**：採用 **Vitest** 搭配 **React Testing Library** 進行全方位測試，涵蓋 API 串接、Mock 資料、`eventBus` 廣播、`ErrorBoundary` 攔截、路由守衛與 React UI 元件，共 **19 隻測試檔（108 個測試案例 100% 通過）**。
+- **E2E 端到端自動化測試**：採用 **Playwright** 進行前後端真實連線 (Real DB API) 自動化測試，共 **9 隻測試檔**，完整驗證前台瀏覽/搜尋/FAQ手風琴/收藏/聯絡表單，以及後台權限防護、技能 CRUD、FAQ CRUD、帳號管理與參數調整。
 
 ---
 
@@ -105,12 +118,15 @@ Prompt-Alchemy/
 
 1. **單元與元件測試 (Unit & Component Test)**：
    - 執行 `npm test` 透過 **Vitest** 搭配 **React Testing Library** 進行測試。
-   - 涵蓋 API 邏輯處理、Mock 資料、`eventBus` 廣播、`ErrorBoundary` 崩潰攔截、核心路由守衛（如 `ProtectedRoute`）與 UI 元件（如 `PromptCard`）共 12 隻測試檔（75 個單元測試案例）。
+   - 涵蓋 API 邏輯、Mock 資料、EventBus、ErrorBoundary、核心路由守衛與各大 UI 元件，共 19 隻測試檔（108 個測試案例全數通過）。
 
 2. **端到端測試 (E2E Test)**：
-   - 本專案使用 **Playwright** 進行包含前後端直連（Real DB API `http://localhost:3000`）的完整自動化瀏覽器測試。
-   - 測試涵蓋前台瀏覽、搜尋、登入、收藏、反饋提交，以及後台權限防護、參數與技能管理。
-   - 執行命令：`npm run test:e2e` 或 `npm run test:e2e:ui`。
+   - 本專案使用 **Playwright** 進行前後端直連 (Real DB API `http://localhost:3000`) 的全自動化瀏覽器測試。
+   - 測試涵蓋前台瀏覽、搜尋、分類篩選、FAQ 展開、登入/註冊、個人收藏、意見回饋，以及後台權限防護、技能維護、FAQ CRUD、帳號管理與參數設置。
+   - 執行指令：
+     - `npm run test:e2e`：無頭模式執行所有 E2E 測試。
+     - `npm run test:e2e:ui`：以 GUI 介面進行測試與除錯。
+     - `npm run test:e2e:report`：檢視詳細 HTML 測試報告。
 
 ---
 
@@ -126,3 +142,4 @@ Prompt-Alchemy/
 3. **分支與 PR 流程**：
    - 基於 `main` 建立功能分支（例如 `feature/amazing-feature`）。
    - 完成開發並通過測試後，提交 Pull Request 並指派團隊成員審查。
+
