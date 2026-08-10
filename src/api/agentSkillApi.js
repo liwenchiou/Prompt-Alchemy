@@ -30,6 +30,8 @@ function normalizeAgentSkill(item) {
     repoOwnerAvatarUrl: item.repoOwnerAvatarUrl || "",
     readmeExcerpt: item.readmeExcerpt || "",
     excerptSource: item.excerptSource || "none",
+    // repo 的 README.md（優先）或 SKILL.md raw 文字網址，前端直接 fetch 渲染，無此欄位時 fallback 顯示 intro。
+    docUrl: item.docUrl || "",
   };
 }
 

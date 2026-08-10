@@ -73,6 +73,30 @@ export async function setupMockApiRoutes(page) {
       createdAt: "2025-01-02T00:00:00.000Z",
       updatedAt: "2025-01-02T00:00:00.000Z",
     },
+    {
+      id: "agent-skill-uuid-0003-0000-000000000003",
+      name: "doc-url-demo",
+      description: "示範透過 docUrl 直接渲染 README/SKILL.md 內容。",
+      intro: "備用摘要（docUrl 抓取失敗時 fallback 顯示）。",
+      repoOwner: "example-org",
+      repoName: "doc-url-demo-repo",
+      skillSlug: "doc-url-demo",
+      creatorName: "example-org",
+      creatorAvatarUrl: "",
+      creatorProfileUrl: "https://github.com/example-org",
+      license: "MIT",
+      categoryId: "agent-category-frontend",
+      category: "前端開發",
+      stargazersCount: 42,
+      copyCount: 0,
+      favoriteCount: 0,
+      isHot: false,
+      isActive: true,
+      createdAt: "2025-01-03T00:00:00.000Z",
+      updatedAt: "2025-01-03T00:00:00.000Z",
+      docUrl:
+        "https://raw.githubusercontent.com/example-org/doc-url-demo-repo/main/SKILL.md",
+    },
   ];
 
   const safeFulfill = async (route, fulfillOptions) => {

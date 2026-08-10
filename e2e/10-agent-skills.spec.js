@@ -95,4 +95,45 @@ test.describe("Agent Skills 瀏覽/搜尋/詳情 端到端測試", () => {
     await expect(excerptSection).toBeVisible({ timeout: 10000 });
     await expect(excerptSection).toContainText("極簡主義工程師思維指南。");
   });
+
+  const DOC_URL =
+    "https://raw.githubusercontent.com/example-org/doc-url-demo-repo/main/SKILL.md";
+
+  test("docUrl 存在時，詳情頁直接 fetch 並渲染 README/SKILL.md 原始內容", async ({
+    page,
+  }) => {
+    await page.route(DOC_URL, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/plain; charset=utf-8",
+        body: "# doc-url-demo\n\n這是從 raw.githubusercontent.com 直接抓回來的 SKILL.md 原始內容。",
+      });
+    });
+
+    await page.goto("/#/agent-skills/agent-skill-uuid-0003-0000-000000000003");
+
+    const docContent = page.getByTestId("skill-doc-content");
+    await expect(docContent).toBeVisible({ timeout: 10000 });
+    await expect(docContent).toContainText(
+      "這是從 raw.githubusercontent.com 直接抓回來的 SKILL.md 原始內容。"
+    );
+    await expect(page.getByTestId("skill-excerpt-fallback")).toHaveCount(0);
+  });
+
+  test("docUrl fetch 失敗時，詳情頁摘要區塊 fallback 顯示 intro", async ({
+    page,
+  }) => {
+    await page.route(DOC_URL, async (route) => {
+      await route.fulfill({ status: 404, body: "Not Found" });
+    });
+
+    await page.goto("/#/agent-skills/agent-skill-uuid-0003-0000-000000000003");
+
+    const fallback = page.getByTestId("skill-excerpt-fallback");
+    await expect(fallback).toBeVisible({ timeout: 10000 });
+    await expect(fallback).toContainText(
+      "備用摘要（docUrl 抓取失敗時 fallback 顯示）。"
+    );
+    await expect(page.getByTestId("skill-doc-content")).toHaveCount(0);
+  });
 });

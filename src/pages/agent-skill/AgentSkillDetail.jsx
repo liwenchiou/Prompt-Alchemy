@@ -45,6 +45,47 @@ export default function AgentSkillDetail() {
     };
   }, [id]);
 
+  const docUrl = skill?.docUrl || "";
+  const [docContent, setDocContent] = useState("");
+  const [docLoading, setDocLoading] = useState(false);
+  const [docError, setDocError] = useState(false);
+
+  const [prevDocUrl, setPrevDocUrl] = useState(docUrl);
+  if (docUrl !== prevDocUrl) {
+    setPrevDocUrl(docUrl);
+    setDocContent("");
+    setDocError(false);
+    setDocLoading(Boolean(docUrl));
+  }
+
+  useEffect(() => {
+    if (!docUrl) return;
+
+    let active = true;
+
+    // docUrl 指向 raw.githubusercontent.com 的 README.md／SKILL.md 純文字內容，
+    // 有開放 CORS，前端直接 fetch 渲染，不透過後端代理。
+    fetch(docUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error("doc fetch failed");
+        return res.text();
+      })
+      .then((text) => {
+        if (!active) return;
+        setDocContent(text);
+        setDocLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setDocError(true);
+        setDocLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [docUrl]);
+
   if (loading) {
     return (
       <div className="w-full min-h-screen bg-[#0A0E1A] text-[#E0F0E8] py-8 px-6 flex items-center justify-center">
@@ -183,9 +224,25 @@ export default function AgentSkillDetail() {
                 {skill.repoDescription}
               </p>
             )}
-            <p className="text-[14px] text-[#E0F0E8] whitespace-pre-wrap wrap-break-word">
-              {excerptText}
-            </p>
+            {docUrl && !docError ? (
+              docLoading ? (
+                <p className="text-[14px] text-[#7DCEA0]">文件載入中...</p>
+              ) : (
+                <pre
+                  data-testid="skill-doc-content"
+                  className="text-[14px] text-[#E0F0E8] whitespace-pre-wrap wrap-break-word font-normal max-h-120 overflow-y-auto"
+                >
+                  {docContent}
+                </pre>
+              )
+            ) : (
+              <p
+                data-testid="skill-excerpt-fallback"
+                className="text-[14px] text-[#E0F0E8] whitespace-pre-wrap wrap-break-word"
+              >
+                {excerptText}
+              </p>
+            )}
           </div>
         </div>
       </div>
