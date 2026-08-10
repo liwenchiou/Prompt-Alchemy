@@ -65,7 +65,7 @@ test.describe("Agent Skills 瀏覽/搜尋/詳情 端到端測試", () => {
       page.getByRole("heading", { name: "/frontend-design" })
     ).toBeVisible({ timeout: 5000 });
     await expect(page.getByText("anthropics").first()).toBeVisible();
-    await expect(page.getByText("anthropics/skills")).toBeVisible();
+    await expect(page.getByText("anthropics/skills").first()).toBeVisible();
     await expect(page.getByText("前端開發")).toBeVisible();
   });
 

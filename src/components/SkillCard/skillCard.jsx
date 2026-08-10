@@ -15,6 +15,9 @@ import {
   FileText,
 } from "lucide-react";
 import { getTagStyles } from "../../utils/tagStyles";
+import openaiIcon from "/openail.svg?url";
+import claudeIcon from "/claude-color.svg?url";
+import gitCloneIcon from "/github.svg?url";
 
 const CATEGORY_ICONS = {
   前端開發: CodeXml,
@@ -27,9 +30,9 @@ const CATEGORY_ICONS = {
 };
 
 const INSTALL_ROW_BADGE_STYLES = {
-  claude: "text-[#c084fc] border-[#a855f7]",
-  codex: "text-[#FF8C00] border-[#cc7000]",
-  "git-clone": "text-[#39FF14] border-[#2a9c39]",
+  claude: "text-[#d97757] border-[#d97757]",
+  codex: "text-[#FFFFFF] border-[#FFFFFF]",
+  "git-clone": "text-[#FFFFFF] border-[#FFFFFF]",
 };
 
 function formatStars(count = 0) {
@@ -102,14 +105,20 @@ export default function SkillCard({ skill, hideStats = false }) {
       : "";
 
   const gitCloneCommand =
-    gitCloneOnly && repoLabel ? `git clone https://github.com/${repoLabel}.git` : "";
+    gitCloneOnly && repoLabel
+      ? `git clone https://github.com/${repoLabel}.git`
+      : "";
 
   // 任一安裝方式不滿足就不顯示該行，卡片下方最多同時顯示 Claude／Codex 兩行，
   // 或 gitCloneMethod 為 true 時只顯示保底的 git clone 一行。
   const installRows = gitCloneCommand
     ? [{ key: "git-clone", label: "Git Clone", command: gitCloneCommand }]
     : [
-        claudeCommand && { key: "claude", label: "Claude", command: claudeCommand },
+        claudeCommand && {
+          key: "claude",
+          label: "Claude",
+          command: claudeCommand,
+        },
         codexCommand && { key: "codex", label: "Codex", command: codexCommand },
       ].filter(Boolean);
 
@@ -195,22 +204,43 @@ export default function SkillCard({ skill, hideStats = false }) {
       </div>
 
       {/* 安裝指令 + 複製按鍵：Claude／Codex 各自安裝機制不同，各佔一行，任一方不滿足就不顯示 */}
-      <div className="box-border w-full flex flex-col gap-2">
+      <div className="box-border w-full flex flex-col gap-3">
         {installRows.length > 0 ? (
           installRows.map((row) => (
             <div
               key={row.key}
               className="box-border w-full flex flex-col gap-1"
             >
-              <span
+              <div
                 data-pencil-name={`Install Method Badge ${row.label}`}
-                className={`text-[10px]/[normal] w-fit shrink-0 inline-block border rounded px-1 ${
+                className={`text-[13px]/[normal] w-fit shrink-0 flex align-middle border rounded-[4px] p-1 ${
                   INSTALL_ROW_BADGE_STYLES[row.key] ||
                   "text-[#7DCEA0] border-[#1A3A2A]"
                 }`}
               >
-                {row.label}
-              </span>
+                {openaiIcon && row.key === "codex" && (
+                  <img
+                    src={openaiIcon}
+                    alt="OpenAI Icon"
+                    className="w-4 h-4 inline-block mr-1 brightness-0 invert"
+                  />
+                )}
+                {claudeIcon && row.key === "claude" && (
+                  <img
+                    src={claudeIcon}
+                    alt="Claude Icon"
+                    className="w-4 h-4 inline-block mr-1"
+                  />
+                )}
+                {gitCloneIcon && row.key === "git-clone" && (
+                  <img
+                    src={gitCloneIcon}
+                    alt="Git Clone Icon"
+                    className="w-4 h-4 inline-block mr-1 brightness-0 invert"
+                  />
+                )}
+                <span>{row.label}</span>
+              </div>
               <div className="box-border w-full flex justify-between items-center gap-2">
                 <div
                   data-pencil-name={`Install Command ${row.label}`}
