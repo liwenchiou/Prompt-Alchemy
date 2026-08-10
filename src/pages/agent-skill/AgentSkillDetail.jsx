@@ -1,9 +1,34 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Undo2, Star, GitFork, ExternalLink } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import { getAgentSkillById } from "../../api/agentSkillApi";
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
+
+// 比照 GitHub 的呈現，讓解析出來的原始 HTML（README 常見的 <picture>/<img> 響應式圖片）
+// 也能正常渲染；rehypeSanitize 接在後面過濾掉腳本等危險標籤/屬性，防止第三方 repo 的 XSS。
+const MARKDOWN_REHYPE_PLUGINS = [rehypeRaw, rehypeSanitize];
+
+// 沒有 Tailwind Typography 外掛，這裡手刻對應暗色主題的 Markdown 排版樣式。
+const MARKDOWN_CONTENT_CLASS =
+  "text-[14px] text-[#E0F0E8] " +
+  "[&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-4 [&_h1]:mb-2 " +
+  "[&_h2]:text-[19px] [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-4 [&_h2]:mb-2 " +
+  "[&_h3]:text-[16px] [&_h3]:font-bold [&_h3]:text-white [&_h3]:mt-3 [&_h3]:mb-1.5 " +
+  "[&_p]:my-2 [&_p]:leading-relaxed " +
+  "[&_a]:text-[#39FF14] [&_a]:underline [&_a:hover]:text-[#00FFFF] " +
+  "[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:my-1 " +
+  "[&_code]:bg-[#111827] [&_code]:text-[#00FFFF] [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[13px] " +
+  "[&_pre]:bg-[#05080C] [&_pre]:border [&_pre]:border-[#1A3A2A] [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:overflow-x-auto " +
+  "[&_pre_code]:bg-transparent [&_pre_code]:px-0 [&_pre_code]:py-0 " +
+  "[&_blockquote]:border-l-2 [&_blockquote]:border-[#39FF14]/50 [&_blockquote]:pl-3 [&_blockquote]:text-[#7DCEA0] " +
+  "[&_img]:max-w-full [&_img]:rounded-lg " +
+  "[&_table]:border-collapse [&_th]:border [&_th]:border-[#1A3A2A] [&_th]:p-2 [&_td]:border [&_td]:border-[#1A3A2A] [&_td]:p-2 " +
+  "[&_hr]:border-[#1A3A2A] [&_hr]:my-4";
 
 function formatStars(count = 0) {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
@@ -114,11 +139,13 @@ export default function AgentSkillDetail() {
   const repoUrl = repoLabel ? `https://github.com/${repoLabel}` : "";
   const ownerAvatarUrl = skill.repoOwnerAvatarUrl || skill.creatorAvatarUrl;
   // 08 號票（GitHub metadata 同步）補上真正的 README 摘要前，excerptSource
-  // 一律是 'none'，此時改顯示 Admin 填的 intro，避免顯示空白摘要區塊。
+  // 一律是 'none'，此時改顯示 Admin 填的 intro；intro 也是空的話再退到
+  // description，最後才用固定文字兜底，確保這個區塊永遠不會顯示空白。
   const excerptText =
-    skill.excerptSource !== "none" && skill.readmeExcerpt
-      ? skill.readmeExcerpt
-      : skill.intro;
+    (skill.excerptSource !== "none" && skill.readmeExcerpt) ||
+    skill.intro ||
+    skill.description ||
+    "此 Skill 尚無摘要內容。";
 
   return (
     <div className="w-full min-h-screen bg-[#0A0E1A] text-[#E0F0E8] py-8 px-6 flex flex-col items-center">
@@ -228,12 +255,17 @@ export default function AgentSkillDetail() {
               docLoading ? (
                 <p className="text-[14px] text-[#7DCEA0]">文件載入中...</p>
               ) : (
-                <pre
+                <div
                   data-testid="skill-doc-content"
-                  className="text-[14px] text-[#E0F0E8] whitespace-pre-wrap wrap-break-word font-normal max-h-120 overflow-y-auto"
+                  className={MARKDOWN_CONTENT_CLASS}
                 >
-                  {docContent}
-                </pre>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={MARKDOWN_REHYPE_PLUGINS}
+                  >
+                    {docContent}
+                  </ReactMarkdown>
+                </div>
               )
             ) : (
               <p
