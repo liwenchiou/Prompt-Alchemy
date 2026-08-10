@@ -34,17 +34,19 @@ function formatStars(count = 0) {
 export default function SkillCard({ skill, hideStats = false }) {
   const navigate = useNavigate();
   const { user, favorites, favoriteCounts, toggleFavorite } = useAuth();
-  const [copied, setCopied] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(null);
 
   const liked = favorites.includes(skill.id);
   const likesCount = favoriteCounts[skill.id] ?? skill?.favoriteCount ?? 0;
 
-  const handleCopy = async (e) => {
+  const handleCopy = async (e, command, key) => {
     e.stopPropagation();
-    const success = await copyToClipboard(installCommand);
+    const success = await copyToClipboard(command);
     if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedKey(key);
+      setTimeout(() => {
+        setCopiedKey((prev) => (prev === key ? null : prev));
+      }, 2000);
     }
   };
 
@@ -74,23 +76,36 @@ export default function SkillCard({ skill, hideStats = false }) {
       ? `${skill.repoOwner}/${skill.repoName}`
       : null;
 
-  // 安裝機制判斷邏輯比照 FRONTEND_API_SPEC.md 第 9 節：gitCloneMethod 為 true 時，
-  // npx 對兩個 agent 都會裝壞，改用 git clone 保底；否則優先顯示 Claude Code 的 npx
-  // 指令，沒有才用 Codex（卡片空間有限，這裡只顯示單一預設指令，完整挑選 agent 的
-  // 介面留給詳情頁）。
+  // 安裝機制判斷邏輯比照 FRONTEND_API_SPEC.md 第 9 節：兩個 agent 的安裝機制完全獨立、
+  // 各自最多一種、不並存——Claude Code 一律走 Claude Plugin（兩行指令），Codex 一律走
+  // npx（一行指令），兩者不會混在一起。gitCloneMethod 為 true 時兩者皆不提供，改用
+  // git clone 保底，此時 claudeInstallMethod／codexInstallMethod 一定都是 false。
   const gitCloneOnly = Boolean(skill?.gitCloneMethod);
-  const defaultAgent = skill?.claudeInstallMethod
-    ? "claude-code"
-    : skill?.codexInstallMethod
-      ? "codex"
-      : null;
 
-  const installCommand =
-    gitCloneOnly && repoLabel
-      ? `git clone https://github.com/${repoLabel}.git`
-      : repoLabel && defaultAgent
-        ? `npx skills add ${repoLabel} --skill ${skill?.skillSlug || skill?.name || ""} -a ${defaultAgent}`
-        : "npx skills add owner/repo --skill skill-slug -a claude-code";
+  const claudeCommand =
+    !gitCloneOnly && skill?.claudeInstallMethod && repoLabel
+      ? [
+          `claude plugin marketplace add ${repoLabel}`,
+          `claude plugin install ${skill?.claudePluginName || ""}@${skill?.claudeMarketplaceName || ""}`,
+        ].join("\n")
+      : "";
+
+  const codexCommand =
+    !gitCloneOnly && skill?.codexInstallMethod && repoLabel
+      ? `npx skills add ${repoLabel} --skill ${skill?.skillSlug || skill?.name || ""} -a codex`
+      : "";
+
+  const gitCloneCommand =
+    gitCloneOnly && repoLabel ? `git clone https://github.com/${repoLabel}.git` : "";
+
+  // 任一安裝方式不滿足就不顯示該行，卡片下方最多同時顯示 Claude／Codex 兩行，
+  // 或 gitCloneMethod 為 true 時只顯示保底的 git clone 一行。
+  const installRows = gitCloneCommand
+    ? [{ key: "git-clone", label: "Git Clone", command: gitCloneCommand }]
+    : [
+        claudeCommand && { key: "claude", label: "Claude", command: claudeCommand },
+        codexCommand && { key: "codex", label: "Codex", command: codexCommand },
+      ].filter(Boolean);
 
   return (
     <div
@@ -200,28 +215,46 @@ export default function SkillCard({ skill, hideStats = false }) {
         </div>
       </div>
 
-      {/* 安裝指令 + 複製按鍵 */}
-      <div className="box-border w-full flex justify-between items-center gap-2">
-        <div
-          data-pencil-name="Install Command"
-          className="text-[14px]/[normal] box-border text-[#d4d9d6] font-mono text-left truncate bg-[rgba(21,70,12,0.7)] rounded-[4px] w-full px-2 py-2 hover:text-[#ffffff]"
-        >
-          {installCommand}
-        </div>
+      {/* 安裝指令 + 複製按鍵：Claude／Codex 各自安裝機制不同，各佔一行，任一方不滿足就不顯示 */}
+      <div className="box-border w-full flex flex-col gap-2">
+        {installRows.length > 0 ? (
+          installRows.map((row) => (
+            <div
+              key={row.key}
+              className="box-border w-full flex flex-col gap-1"
+            >
+              <div className="text-[11px]/[normal] box-border text-[#7DCEA0] font-semibold text-left">
+                {row.label}
+              </div>
+              <div className="box-border w-full flex justify-between items-center gap-2">
+                <div
+                  data-pencil-name={`Install Command ${row.label}`}
+                  className="text-[13px]/[18px] box-border text-[#d4d9d6] font-mono text-left whitespace-pre-wrap wrap-break-word bg-[rgba(21,70,12,0.7)] rounded-[4px] w-full px-2 py-2 hover:text-[#ffffff]"
+                >
+                  {row.command}
+                </div>
 
-        <button
-          type="button"
-          onClick={handleCopy}
-          data-pencil-name="Copy Pill"
-          className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
-        >
-          <div
-            data-pencil-name="Copy Label"
-            className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
-          >
-            {copied ? "已複製" : "複製"}
+                <button
+                  type="button"
+                  onClick={(e) => handleCopy(e, row.command, row.key)}
+                  data-pencil-name={`Copy Pill ${row.label}`}
+                  className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
+                >
+                  <div
+                    data-pencil-name={`Copy Label ${row.label}`}
+                    className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
+                  >
+                    {copiedKey === row.key ? "已複製" : "複製"}
+                  </div>
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-[12px]/[normal] box-border text-[#7DCEA0]/70 text-left">
+            尚無安裝指令。
           </div>
-        </button>
+        )}
       </div>
       <div className="flex w-full justify-between items-center gap-2 mt-1">
         {/* 分類徽章 */}
