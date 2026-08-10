@@ -167,7 +167,7 @@ export default function AgentSkillDetail() {
     <div className="w-full min-h-screen bg-[#0A0E1A] text-[#E0F0E8] py-8 px-6 flex flex-col items-center">
       <div
         data-pencil-name="Agent Skill Detail Content"
-        className="box-border w-full max-w-350 flex flex-col gap-5.5 py-3 justify-start items-start"
+        className="box-border w-full max-w-350 flex flex-col gap-5.5 py-3 justify-start items-start text-left"
       >
         <Link
           to="/agent-skills"
