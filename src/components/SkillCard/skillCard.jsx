@@ -26,6 +26,12 @@ const CATEGORY_ICONS = {
   "文件 / 寫作": FileText,
 };
 
+const INSTALL_ROW_BADGE_STYLES = {
+  claude: "text-[#c084fc] border-[#a855f7]",
+  codex: "text-[#FF8C00] border-[#cc7000]",
+  "git-clone": "text-[#39FF14] border-[#2a9c39]",
+};
+
 function formatStars(count = 0) {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
   return `${count}`;
@@ -157,33 +163,6 @@ export default function SkillCard({ skill, hideStats = false }) {
                 {skill.license}
               </span>
             )}
-            {gitCloneOnly ? (
-              <span
-                data-pencil-name="Install Method Badge Git Clone"
-                className="text-[10px]/[normal] shrink-0 text-[#39FF14] border border-[#2a9c39] rounded px-1"
-              >
-                Git Clone
-              </span>
-            ) : (
-              <>
-                {skill?.claudeInstallMethod && (
-                  <span
-                    data-pencil-name="Install Method Badge Claude"
-                    className="text-[10px]/[normal] shrink-0 text-[#c084fc] border border-[#a855f7] rounded px-1"
-                  >
-                    Claude
-                  </span>
-                )}
-                {skill?.codexInstallMethod && (
-                  <span
-                    data-pencil-name="Install Method Badge Codex"
-                    className="text-[10px]/[normal] shrink-0 text-[#FF8C00] border border-[#cc7000] rounded px-1"
-                  >
-                    Codex
-                  </span>
-                )}
-              </>
-            )}
           </div>
 
           <div
@@ -223,9 +202,15 @@ export default function SkillCard({ skill, hideStats = false }) {
               key={row.key}
               className="box-border w-full flex flex-col gap-1"
             >
-              <div className="text-[11px]/[normal] box-border text-[#7DCEA0] font-semibold text-left">
+              <span
+                data-pencil-name={`Install Method Badge ${row.label}`}
+                className={`text-[10px]/[normal] w-fit shrink-0 inline-block border rounded px-1 ${
+                  INSTALL_ROW_BADGE_STYLES[row.key] ||
+                  "text-[#7DCEA0] border-[#1A3A2A]"
+                }`}
+              >
                 {row.label}
-              </div>
+              </span>
               <div className="box-border w-full flex justify-between items-center gap-2">
                 <div
                   data-pencil-name={`Install Command ${row.label}`}
