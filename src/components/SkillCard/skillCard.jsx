@@ -41,9 +41,7 @@ export default function SkillCard({ skill, hideStats = false }) {
 
   const handleCopy = async (e) => {
     e.stopPropagation();
-    const textToCopy =
-      skill?.skillContent || skill?.description || "Default skill Content";
-    const success = await copyToClipboard(textToCopy);
+    const success = await copyToClipboard(installCommand);
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -82,17 +80,17 @@ export default function SkillCard({ skill, hideStats = false }) {
     <div
       onClick={handleCardClick}
       data-pencil-name={skill?.name || "skill-card"}
-      className="box-border flex-1 h-fit flex flex-col gap-3.5 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className="box-border flex-1 h-fit flex flex-col gap-4 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer"
     >
       <div
         data-pencil-name="Title Block"
-        className="box-border w-full h-fit shrink-0 flex flex-col gap-1.5 justify-start items-start"
+        className="box-border w-full h-fit shrink-0 flex flex-col gap-2.5 justify-start items-start"
       >
         {/* 作者 / 來源 + 星星／愛心 */}
         <div className="flex w-full justify-between items-center gap-2">
           <div
             data-pencil-name="Source Row"
-            className="flex items-center gap-1.5 min-w-0"
+            className="flex items-center gap-2 min-w-0"
           >
             {skill?.creatorAvatarUrl && (
               <img
@@ -112,16 +110,18 @@ export default function SkillCard({ skill, hideStats = false }) {
                   )
                 }
                 data-pencil-name="Repo Link"
-                className="flex items-center gap-1 text-[11px]/[normal] text-[#7DCEA0] hover:text-[#39FF14] transition-colors bg-transparent border-0 cursor-pointer truncate p-0"
+                className="flex items-center gap-1 text-[12px]/[normal] text-[#7DCEA0] hover:text-[#39FF14] transition-colors bg-transparent border-0 cursor-pointer truncate p-0"
               >
-                <GitFork size={12} className="shrink-0" />
-                <span className="truncate">{repoLabel}</span>
+                <GitFork size={14} className="shrink-0" />
+                <span className="truncate text-[14px]/[normal]">
+                  {repoLabel}
+                </span>
               </button>
             )}
             {skill?.license && (
               <span
                 data-pencil-name="License Badge"
-                className="text-[10px]/[normal] shrink-0 text-[#7DCEA0]/70 border border-[#1A4A2A] rounded px-1"
+                className="text-[10px]/[normal] shrink-0 text-[#3ebef5] border border-[#2a9ccd] rounded px-1"
               >
                 {skill.license}
               </span>
@@ -134,9 +134,9 @@ export default function SkillCard({ skill, hideStats = false }) {
           >
             <div
               data-pencil-name="Stars"
-              className="text-[12px]/[normal] box-border text-[#FFD700] font-normal text-left whitespace-nowrap flex items-center gap-1"
+              className="text-[13px]/[normal] box-border text-[#FFD700] font-normal text-left whitespace-nowrap flex items-center gap-1"
             >
-              <Star size={12} fill="#FFD700" />
+              <Star size={14} fill="#FFD700" />
               {formatStars(skill?.stargazersCount)}
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function SkillCard({ skill, hideStats = false }) {
 
         <div
           data-pencil-name="Card Description"
-          className="text-[12px]/[18px] box-border w-full text-[#7DCEA0] font-normal text-left line-clamp-2 h-9 overflow-hidden"
+          className="text-[13px]/[18px] box-border w-full text-[#7DCEA0] font-normal text-left line-clamp-2 overflow-hidden"
         >
           {skill?.description || "尚無描述。"}
         </div>
@@ -161,7 +161,7 @@ export default function SkillCard({ skill, hideStats = false }) {
       <div className="box-border w-full flex justify-between items-center gap-2">
         <div
           data-pencil-name="Install Command"
-          className="text-[12px]/[normal] box-border text-[#d4d9d6] font-mono text-left truncate bg-[rgba(18,45,13,0.4)] w-full px-2 py-1"
+          className="text-[14px]/[normal] box-border text-[#d4d9d6] font-mono text-left truncate bg-[rgba(21,70,12,0.7)] rounded-[4px] w-full px-2 py-2 hover:text-[#ffffff]"
         >
           {installCommand}
         </div>
@@ -180,15 +180,15 @@ export default function SkillCard({ skill, hideStats = false }) {
           </div>
         </button>
       </div>
-      <div className="flex w-full justify-between items-center gap-2">
+      <div className="flex w-full justify-between items-center gap-2 mt-1">
         {/* 分類徽章 */}
         <div
           data-pencil-name={`Category ${categoryName}`}
           className={`box-border w-fit shrink-0 flex flex-row items-center gap-1 py-1 px-2 ${categoryStyle.bg} border ${categoryStyle.border} rounded-[999px]`}
         >
-          <CategoryIcon size={12} className={categoryStyle.text} />
+          <CategoryIcon size={14} className={categoryStyle.text} />
           <span
-            className={`text-[11px]/[normal] font-normal text-left whitespace-nowrap ${categoryStyle.text}`}
+            className={`text-[12px]/[normal] font-normal text-left whitespace-nowrap ${categoryStyle.text}`}
           >
             {categoryName}
           </span>
@@ -201,9 +201,9 @@ export default function SkillCard({ skill, hideStats = false }) {
               type="button"
               onClick={handleLike}
               data-pencil-name="Heart"
-              className="text-[12px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex items-center gap-1"
+              className="text-[14px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex items-center gap-1"
             >
-              {liked ? <Heart size={12} fill="#fc4c87" /> : <Heart size={12} />}
+              {liked ? <Heart size={14} fill="#fc4c87" /> : <Heart size={14} />}
               {likesCount}
             </button>
           )}
