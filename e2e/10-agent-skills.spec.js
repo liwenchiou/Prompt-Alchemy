@@ -35,6 +35,24 @@ test.describe("Agent Skills 瀏覽/搜尋/詳情 端到端測試", () => {
     ).toBeVisible({ timeout: 5000 });
   });
 
+  test("關鍵字搜尋也能比對 repoOwner，不只比對 name/intro", async ({
+    page,
+  }) => {
+    await page.goto("/#/agent-skills");
+
+    const searchInput = page.locator(
+      "input[placeholder*='搜尋 Agent Skill']"
+    );
+    await expect(searchInput).toBeVisible();
+
+    // liwenchiou 是 lazy-senior 的 repoOwner，不是它的 name/intro 內容
+    await searchInput.fill("liwenchiou");
+    await expect(page.getByText("lazy-senior").first()).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(page.getByText("frontend-design")).toHaveCount(0);
+  });
+
   test("依分類篩選只顯示該分類的 Agent Skill", async ({ page }) => {
     await page.goto("/#/agent-skills");
 

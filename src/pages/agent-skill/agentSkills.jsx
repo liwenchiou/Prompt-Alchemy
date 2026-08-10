@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import SkillCard from "../../components/SkillCard/skillCard";
-import { getAgentSkills, getAgentSkillCategories } from "../../api/agentSkillApi";
+import {
+  getAgentSkills,
+  getAgentSkillCategories,
+} from "../../api/agentSkillApi";
 import { usePageLoading } from "../../hooks/usePageLoading";
 
 export default function AgentSkills() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [skills, setSkills] = useState([]);
+  const [allSkills, setAllSkills] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const requestId = useRef(0);
@@ -19,30 +22,35 @@ export default function AgentSkills() {
       .catch(() => setCategories([]));
   }, []);
 
+  // 分類切換才需要打 API；關鍵字搜尋在下面對已取得的清單做前端過濾，
+  // 才能涵蓋後端 keyword 沒有比對的 repoOwner。
   useEffect(() => {
     const currentRequest = ++requestId.current;
 
-    const timer = setTimeout(() => {
-      getAgentSkills({
-        keyword: searchQuery.trim() || undefined,
-        categoryId: selectedCategoryId || undefined,
+    getAgentSkills({ categoryId: selectedCategoryId || undefined })
+      .then((list) => {
+        if (currentRequest === requestId.current) {
+          setAllSkills(list);
+          setLoading(false);
+        }
       })
-        .then((list) => {
-          if (currentRequest === requestId.current) {
-            setSkills(list);
-            setLoading(false);
-          }
-        })
-        .catch(() => {
-          if (currentRequest === requestId.current) {
-            setSkills([]);
-            setLoading(false);
-          }
-        });
-    }, 300);
+      .catch(() => {
+        if (currentRequest === requestId.current) {
+          setAllSkills([]);
+          setLoading(false);
+        }
+      });
+  }, [selectedCategoryId]);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategoryId]);
+  const query = searchQuery.trim().toLowerCase();
+  const skills = query
+    ? allSkills.filter(
+        (skill) =>
+          (skill.name || "").toLowerCase().includes(query) ||
+          (skill.intro || "").toLowerCase().includes(query) ||
+          (skill.repoOwner || "").toLowerCase().includes(query)
+      )
+    : allSkills;
 
   return (
     <div className="w-full min-h-screen bg-[#0A0E1A] text-[#E0F0E8] py-8 px-6 flex flex-col items-center">
@@ -103,9 +111,9 @@ export default function AgentSkills() {
           data-pencil-name="Agent Skill List Region"
           className="box-border flex-1 w-full flex flex-col gap-4.5 justify-start items-start"
         >
-          <h1 className="text-[28px] sm:text-[36px] font-bold text-white">
+          {/* <h1 className="text-[28px] sm:text-[36px] font-bold text-white">
             Agent Skills
-          </h1>
+          </h1> */}
 
           <div
             data-pencil-name="List Search Bar"
@@ -115,10 +123,7 @@ export default function AgentSkills() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => {
-                  setLoading(true);
-                  setSearchQuery(e.target.value);
-                }}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜尋 Agent Skill..."
                 className="w-full bg-transparent border-0 text-[#E0F0E8] placeholder-[#3D6B50] focus:outline-none text-[13px]"
               />
