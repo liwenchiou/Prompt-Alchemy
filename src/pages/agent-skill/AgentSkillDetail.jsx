@@ -4,14 +4,30 @@ import { Undo2, Star, GitFork, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import rehypeSanitize from "rehype-sanitize";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { getAgentSkillById } from "../../api/agentSkillApi";
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
 
+function isAlignAttribute(attribute) {
+  return (Array.isArray(attribute) ? attribute[0] : attribute) === "align";
+}
+
+// rehype-sanitize 預設允許 legacy 的 align 屬性（<p align="center"> 這種 README 常見寫法），
+// 瀏覽器仍會照做置中；拿掉它讓內容一律吃我們自己的排版樣式，不受來源 repo 影響。
+const MARKDOWN_SANITIZE_SCHEMA = {
+  ...defaultSchema,
+  attributes: Object.fromEntries(
+    Object.entries(defaultSchema.attributes || {}).map(([tag, attributes]) => [
+      tag,
+      (attributes || []).filter((attribute) => !isAlignAttribute(attribute)),
+    ])
+  ),
+};
+
 // 比照 GitHub 的呈現，讓解析出來的原始 HTML（README 常見的 <picture>/<img> 響應式圖片）
 // 也能正常渲染；rehypeSanitize 接在後面過濾掉腳本等危險標籤/屬性，防止第三方 repo 的 XSS。
-const MARKDOWN_REHYPE_PLUGINS = [rehypeRaw, rehypeSanitize];
+const MARKDOWN_REHYPE_PLUGINS = [rehypeRaw, [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA]];
 
 // 沒有 Tailwind Typography 外掛，這裡手刻對應暗色主題的 Markdown 排版樣式。
 const MARKDOWN_CONTENT_CLASS =
