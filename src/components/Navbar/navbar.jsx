@@ -60,6 +60,17 @@ export default function Navbar() {
             <ClipboardList size={20} />
           </span>
         </Link>
+        <Link
+          to="/agent-skills"
+          data-pencil-name="Nav Agent Skills"
+          aria-label="Agent Skills"
+          className="inline-flex flex-1 lg:flex-none justify-center items-center text-[16px]/[normal] box-border text-[#7DCEA0] hover:text-[#39FF14] transition-colors font-bold text-center whitespace-nowrap no-underline"
+        >
+          <span className="hidden sm:inline">Skills清單</span>
+          <span className="sm:hidden" aria-hidden="true">
+            <ClipboardList size={20} />
+          </span>
+        </Link>
         {user && (
           <Link
             to="/favorites"
