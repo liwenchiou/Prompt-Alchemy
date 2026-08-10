@@ -4,6 +4,17 @@ import { setupMockApiRoutes } from "./helpers/mockApi";
 test.describe("意見回饋 (Feedback / Contact) 端到端測試 - Real DB & Standalone 連動", () => {
   test.beforeEach(async ({ page }) => {
     await setupMockApiRoutes(page);
+
+    // 覆蓋掉 setupMockApiRoutes 預設「真實後端可用就轉發」的行為：這支測試每次
+    // 都會送出一筆意見回饋，若讓它寫進真實後端，跑幾次 e2e 就會在正式 DB 累積
+    // 幾筆垃圾聯絡紀錄。改成一律回傳假的成功回應，不接觸真實後端。
+    await page.route("**/contacts**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ status: "success", message: "傳送成功" }),
+      });
+    });
   });
 
   test("填寫意見回饋並成功提交至後端 DB / API", async ({ page }) => {
