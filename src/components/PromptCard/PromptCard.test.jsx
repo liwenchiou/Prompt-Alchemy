@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import PromptCard from "./promptCard";
+import PromptCard from "./PromptCard";
 import useAuth from "../../hooks/useAuth";
 import { copyToClipboard } from "../../utils/copyToClipboard";
 
@@ -56,7 +56,7 @@ describe("PromptCard 元件測試", () => {
       </MemoryRouter>
     );
 
-    const copyBtn = screen.getByRole("button", { name: "複製" });
+    const copyBtn = screen.getByRole("button", { name: /複製/ });
     fireEvent.click(copyBtn);
 
     expect(copyToClipboard).toHaveBeenCalledWith("請你扮演資深後端工程師...");
@@ -70,7 +70,7 @@ describe("PromptCard 元件測試", () => {
       </MemoryRouter>
     );
 
-    const heartBtn = screen.getByRole("button", { name: /10/ });
+    const heartBtn = screen.getByRole("button", { name: /收藏/ });
     fireEvent.click(heartBtn);
 
     expect(mockToggleFavorite).toHaveBeenCalledWith("prompt-uuid-1");

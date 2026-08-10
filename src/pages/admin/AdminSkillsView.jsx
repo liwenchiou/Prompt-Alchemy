@@ -2,9 +2,9 @@
 // 篩選條件（關鍵字/類型/分類/狀態）存在這頁，實際過濾邏輯放在 adminApi 的 getSkills。
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminPageHeader from "../../components/admin/adminPageHeader";
-import SkillFilterBar from "../../components/admin/skillFilterBar";
-import SkillTable from "../../components/admin/skillTable";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import SkillFilterBar from "../../components/admin/SkillFilterBar";
+import SkillTable from "../../components/admin/SkillTable";
 import {
   getSkills,
   getParametersByType,

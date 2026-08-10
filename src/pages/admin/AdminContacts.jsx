@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import AdminPageHeader from "../../components/admin/adminPageHeader";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import {
   getAdminContacts,
   updateAdminContactStatus,

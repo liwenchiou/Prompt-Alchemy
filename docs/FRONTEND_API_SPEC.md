@@ -13,6 +13,8 @@
 6. [後台 Prompt / Skill 管理模組 (Admin Skills)](#6-後台-prompt--skill-管理模組-admin-skills)
 7. [後台分類標籤參數管理模組 (Admin Parameters)](#7-後台分類標籤參數管理模組-admin-parameters)
 8. [後台會員管理模組 (Admin Users)](#8-後台會員管理模組-admin-users)
+9. [前台常見問題模組 (Public FAQs)](#9-前台常見問題模組-public-faqs)
+10. [後台常見問題管理模組 (Admin FAQs)](#10-後台常見問題管理模組-admin-faqs)
 
 ---
 
@@ -479,3 +481,112 @@ Prompt 的範例輸出已升級為可動態增減與排序的**區塊陣列 (Blo
 * **修改會員資料**: `PUT /admin/users/:id` (修改 name, role, email, isActive)
 * **切換啟用狀態**: `PATCH /admin/users/:id/active` (`{ "isActive": false }`)
 * **刪除會員**: `DELETE /admin/users/:id`
+
+---
+
+## 9. 前台常見問題模組 (Public FAQs)
+
+### 9.1 取得已啟用的 FAQ
+* **Endpoint**: `GET /faqs/`
+* **Auth**: 無需 Token
+* **排序**: `sortOrder ASC`，再依 `createdAt ASC`、`id ASC` 保持穩定順序。
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "60000000-0000-4000-a000-000000000001",
+        "question": "Prompt 鍊金坊是什麼？",
+        "answer": "Prompt 鍊金坊是一個整理與分享 AI Prompt、Skill 的收藏平台。"
+      }
+    ]
+  }
+  ```
+
+前台只會收到 `id`、`question`、`answer`。`sortOrder`、`isActive` 與時間欄位不會出現在公開 response；沒有啟用資料時回傳空陣列。
+
+---
+
+## 10. 後台常見問題管理模組 (Admin FAQs)
+
+所有 Admin FAQ API 均需 `Authorization: Bearer <admin_token>`，且 JWT role 必須為 `admin`。
+
+### 10.1 取得 FAQ 管理清單
+* **Endpoint**: `GET /admin/faqs/`
+* **Auth**: Admin Token
+* **Query Parameters**: 無；目前沒有 server-side pagination 或 filter。
+* **排序**: 啟用資料優先，再依 `sortOrder ASC`、`createdAt ASC`、`id ASC`。
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "60000000-0000-4000-a000-000000000001",
+        "question": "Prompt 鍊金坊是什麼？",
+        "answer": "Prompt 鍊金坊是一個整理與分享 AI Prompt、Skill 的收藏平台。",
+        "sortOrder": 1,
+        "isActive": true,
+        "createdAt": "2026-08-03T12:57:01.510Z",
+        "updatedAt": "2026-08-03T15:17:07.979Z"
+      }
+    ]
+  }
+  ```
+
+### 10.2 取得單筆 FAQ
+* **Endpoint**: `GET /admin/faqs/:id`
+* **Auth**: Admin Token
+* **說明**: 可取得啟用或未啟用資料；不存在回傳 `404`，UUID 格式錯誤回傳 `400`。
+
+### 10.3 建立 FAQ
+* **Endpoint**: `POST /admin/faqs/`
+* **Auth**: Admin Token
+* **Request Body**:
+  ```json
+  {
+    "question": "如何使用 Prompt 鍊金坊？",
+    "answer": "瀏覽並複製想使用的 Prompt。",
+    "sortOrder": 0,
+    "isActive": true
+  }
+  ```
+* `question`、`answer` 必填，必須是 trim 後非空白字串。
+* `sortOrder` 可省略，預設 `0`；必須是大於或等於 `0` 的整數，不接受數字字串、小數或負數。
+* `isActive` 可省略，預設 `true`；必須是 JSON boolean。
+* **Response**: `201 Created`，`data` 為完整 Admin FAQ model。
+
+### 10.4 更新 FAQ
+* **Endpoint**: `PUT /admin/faqs/:id`
+* **Auth**: Admin Token
+* **說明**: 雖使用 `PUT`，實作支援部分更新；可更新 `question`、`answer`、`sortOrder`、`isActive`。
+* **Request Body 範例**:
+  ```json
+  {
+    "sortOrder": 3,
+    "isActive": false
+  }
+  ```
+* 空物件或只有未知欄位會回傳 `400`：`沒有可更新的 FAQ 欄位`。
+* 成功後會更新 `updatedAt`。
+
+### 10.5 下架 FAQ（軟刪除）
+* **Endpoint**: `DELETE /admin/faqs/:id`
+* **Auth**: Admin Token
+* **說明**: 不會刪除資料列，而是將 `isActive` 設為 `false`。下架後公開 `GET /faqs/` 不再回傳該筆，但後台 list/detail 仍可取得。
+* **恢復發布**: 呼叫 `PUT /admin/faqs/:id`：
+  ```json
+  {
+    "isActive": true
+  }
+  ```
+
+### 10.6 錯誤與功能限制
+* `400`: 欄位格式、空白必填值、負數／小數排序、空 update 或 UUID 格式錯誤。
+* `401`: 未登入或 Token 無效／過期。
+* `403`: JWT role 不是 admin。
+* `404`: 找不到指定 FAQ。
+* `500` / Network Error: 伺服器或連線異常，前端應提供重新載入或重試。
+* 目前沒有 `PATCH`、bulk reorder、永久刪除、重複問題限制、server-side 搜尋或 pagination。
+* 公開 `src/api/faqApi.js` 只處理三欄 public model；Admin FAQ CRUD 應使用 `src/api/adminApi.js` 的完整 model。

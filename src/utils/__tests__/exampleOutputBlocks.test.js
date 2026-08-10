@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toBlocks, toPayload } from "./exampleOutputBlocks";
+import { toBlocks, toPayload } from "../exampleOutputBlocks";
 
 describe("toBlocks", () => {
   it("converts a plain string into one text block", () => {

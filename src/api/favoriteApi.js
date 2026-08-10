@@ -1,5 +1,5 @@
 import { storage } from "../utils/storage";
-import { favoritesTable } from "./mockData";
+import { favoritesTable } from "./mocks/mockData";
 import { apiRequest } from "./apiClient.js";
 
 export async function getUserFavoriteAPI() {

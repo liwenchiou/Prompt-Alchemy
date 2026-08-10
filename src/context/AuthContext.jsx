@@ -13,6 +13,7 @@ import {
 } from "../api/authApi";
 import { refreshPublishedPrompts } from "../api/promptApi";
 import { alertHelper } from "../utils/sweetAlert";
+import { eventBus } from "../utils/eventBus";
 
 export const AuthContext = createContext(null);
 
@@ -58,6 +59,14 @@ export function AuthProvider({ children }) {
     };
 
     initAuth();
+
+    const unsubscribe = eventBus.on("auth:expired", () => {
+      setUser(null);
+      setFavorites([]);
+      alertHelper.error("登入逾期", "您的登入已過期，請重新登入", true);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const loginUser = async (userData, options = {}) => {

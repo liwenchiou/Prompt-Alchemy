@@ -1,7 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { setupMockApiRoutes } from "./helpers/mockApi";
 
-test.describe("後台驗證 (Admin Auth) 端到端測試 - Real DB & 權限防護", () => {
-  test("管理者使用真實帳號成功登入進入後台", async ({ page }) => {
+test.describe("後台驗證 (Admin Auth) 端到端測試 - Real DB & Standalone 連結", () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMockApiRoutes(page);
+  });
+
+  test("管理者使用真實/測試帳號成功登入進入後台", async ({ page }) => {
     await page.goto("/#/admin/login");
 
     // 驗證管理者登入頁元素

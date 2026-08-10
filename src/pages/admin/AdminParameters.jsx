@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import AdminPageHeader from "../../components/admin/adminPageHeader";
-import ParameterFormModal from "../../components/admin/parameterFormModal";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import ParameterFormModal from "../../components/admin/ParameterFormModal";
 import {
   getParametersByType,
   createParameter,

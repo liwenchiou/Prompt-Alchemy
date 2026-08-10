@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const { postMock } = vi.hoisted(() => ({ postMock: vi.fn() }));
 
-vi.mock("./apiClient", () => ({
+vi.mock("../apiClient", () => ({
   default: { post: postMock },
 }));
 
-import { uploadFile } from "./uploadApi";
+import { uploadFile } from "../uploadApi";
 
 describe("uploadFile", () => {
   beforeEach(() => {

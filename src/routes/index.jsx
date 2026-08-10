@@ -1,18 +1,18 @@
 import { createHashRouter } from "react-router-dom";
 import Agentskills from "../pages/agent-skill/agentSkills";
 import App from "../App";
-import HomeLayout from "../layouts/homeLayout";
-import Home from "../pages/home/home";
-import Skills from "../pages/prompt/skills";
-import SkillDetail from "../pages/prompt/skillDetail";
-import Favorite from "../pages/favorite/favorite";
-import Login from "../pages/member/login";
-import Register from "../pages/member/register";
-import Profile from "../pages/favorite/profile";
-import Password from "../pages/favorite/password";
-import NotFound from "../pages/notFound";
-import FavoriteLayout from "../layouts/favoriteLayout";
-import adminRoutes from "./adminRoutes";
+import HomeLayout from "../layouts/HomeLayout";
+import Home from "../pages/home/HomePage";
+import Skills from "../pages/prompt/SkillsPage";
+import SkillDetail from "../pages/prompt/SkillDetailPage";
+import Favorite from "../pages/favorite/FavoritePage";
+import Login from "../pages/member/LoginPage";
+import Register from "../pages/member/RegisterPage";
+import Profile from "../pages/favorite/ProfilePage";
+import Password from "../pages/favorite/PasswordPage";
+import NotFound from "../pages/NotFoundPage";
+import FavoriteLayout from "../layouts/FavoriteLayout";
+import adminRoutes from "./AdminRoutes";
 
 const router = createHashRouter([
   {

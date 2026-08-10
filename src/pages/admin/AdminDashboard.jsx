@@ -1,7 +1,7 @@
 // 後台首頁（/admin）：統計數字、快速操作與儀表板列表。
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import AdminPageHeader from "../../components/admin/adminPageHeader";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import {
   getSkills,
   getParametersByType,

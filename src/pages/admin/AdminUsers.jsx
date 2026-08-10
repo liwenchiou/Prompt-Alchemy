@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import AdminPageHeader from "../../components/admin/adminPageHeader";
-import UserFormModal from "../../components/admin/userFormModal";
+import AdminPageHeader from "../../components/admin/AdminPageHeader";
+import UserFormModal from "../../components/admin/UserFormModal";
 import {
   getUsers,
   createUser,

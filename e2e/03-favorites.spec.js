@@ -1,7 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { setupMockApiRoutes } from "./helpers/mockApi";
 
-test.describe("收藏功能 (Favorites) 端到端測試 - Real DB 連動", () => {
+test.describe("收藏功能 (Favorites) 端到端測試 - Real DB & Standalone 連動", () => {
   test.beforeEach(async ({ page }) => {
+    await setupMockApiRoutes(page);
+
     // 進入登入頁
     await page.goto("/#/login");
     const quickFillBtn = page.locator("button:has-text('快速帶入測試帳號')");
@@ -25,7 +28,7 @@ test.describe("收藏功能 (Favorites) 端到端測試 - Real DB 連動", () =>
     }
   });
 
-  test("進入我的收藏頁面，可看見與 Real DB 連動之收藏清單", async ({ page }) => {
+  test("進入我的收藏頁面，可看見與 Real DB / Mock 連動之收藏清單", async ({ page }) => {
     await page.goto("/#/favorites");
 
     // 驗證 Favorites Layout 選單中的 "My Library" 與 "我的收藏" 側邊欄與頁面主體

@@ -7,7 +7,7 @@ import "swiper/css/pagination";
 import PromptCard from "../../components/PromptCard/promptCard";
 import SkillCard from "../../components/SkillCard/skillCard";
 import { getPublishedPrompts } from "../../api/promptApi";
-import HeroDevice from "../../components/HeroDevice/heroDevice";
+import HeroDevice from "../../components/HeroDevice/HeroDevice";
 import { usePageLoading } from "../../hooks/usePageLoading";
 import {
   CodeXml,
@@ -17,7 +17,8 @@ import {
   Languages,
   PocketKnife,
 } from "lucide-react";
-import ContactWidget from "../../components/ContactWidget/contactWidget";
+import ContactWidget from "../../components/ContactWidget/ContactWidget";
+import FAQSection from "../../components/FAQSection/FAQSection";
 
 const CATEGORY_FRONTEND = "前端開發";
 const CATEGORY_BACKEND = "後端開發";
@@ -936,6 +937,7 @@ export default function Home() {
           ))}
         </Swiper>
       </section>
+      <FAQSection />
 
       {/* 右下角聯絡我們表單 Widget */}
       <ContactWidget />

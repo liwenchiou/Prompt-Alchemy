@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
-import PromptCard from "../../components/PromptCard/promptCard";
+import PromptCard from "../../components/PromptCard/PromptCard";
 import {
   getPublishedPrompts,
   getCategories,
@@ -10,6 +10,7 @@ import {
 } from "../../api/promptApi";
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
+import { eventBus } from "../../utils/eventBus";
 
 const categoryMemoToast = Swal.mixin({
   toast: true,
@@ -27,7 +28,6 @@ export default function Skills() {
     () => routeCategory || "全部",
   );
   const [selectedTag, setSelectedTag] = useState(null);
-  const [handledLocationKey, setHandledLocationKey] = useState(location.key);
   const [sortBy, setSortBy] = useState("date"); // "date" | "popularity"
   const [isCategoryExpanded, setIsCategoryExpanded] = useState(false);
   const [isCompactScreen, setIsCompactScreen] = useState(
@@ -41,6 +41,11 @@ export default function Skills() {
 
   // 資料就緒後關閉 loading
   usePageLoading(prompts.length > 0);
+
+  useEffect(() => {
+    setSelectedCategory(routeCategory || "全部");
+    setSelectedTag(null);
+  }, [location.key, routeCategory]);
 
   useEffect(() => {
     const loadPrompts = async () => {
@@ -72,17 +77,11 @@ export default function Skills() {
     });
 
     loadPrompts();
-    window.addEventListener(PUBLISHED_PROMPTS_UPDATED_EVENT, loadPrompts);
+    const unsubscribe = eventBus.on(PUBLISHED_PROMPTS_UPDATED_EVENT, loadPrompts);
     return () => {
-      window.removeEventListener(PUBLISHED_PROMPTS_UPDATED_EVENT, loadPrompts);
+      unsubscribe();
     };
   }, []);
-
-  if (location.key !== handledLocationKey) {
-    setHandledLocationKey(location.key);
-    setSelectedCategory(routeCategory || "全部");
-    setSelectedTag(null);
-  }
 
   useEffect(() => {
     const onResize = () => {

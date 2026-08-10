@@ -146,35 +146,23 @@ export default function PromptCard({ prompt, hideStats = false }) {
       小工具: "bg-[#1A0A15]",
     }[categoryName] || "bg-[#0F1F18]";
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      aria-label={`檢視 Prompt：${prompt?.title || "技能詳情"}`}
       data-pencil-name={prompt?.title || "後端 API 審查"}
-      className="box-border flex-1 h-fit flex flex-col gap-3.5 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className="box-border flex-1 h-fit flex flex-col gap-3.5 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#39FF14]"
     >
-      {/* <div        data-pencil-name="Card Top"
-        className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center"      >
-        <div
-          data-pencil-name="Card Meta"
-          className="box-border w-fit shrink-0 h-fit flex flex-row gap-3 justify-start items-center"
-        >
-          <div
-            data-pencil-name="Icon Wrap"
-            className={`box-border w-10 shrink-0 h-10 flex flex-row gap-0 justify-center items-center ${iconWrapBg} rounded-[10px]`}
-          >
-            {getCategoryIcon(categoryName)}
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleLike}
-          data-pencil-name="Heart"
-          className="text-[14px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex align-middle items-center gap-1"
-        >
-          {liked ? <Heart size={14} fill="#fc4c87" /> : <Heart size={14} />}
-          {likesCount}
-        </button>
-      </div> */}
       {/* 卡片title + 收藏 + 簡介 */}
       <div
         data-pencil-name="Title Block"
@@ -191,6 +179,8 @@ export default function PromptCard({ prompt, hideStats = false }) {
             <button
               type="button"
               onClick={handleLike}
+              aria-label={liked ? "取消收藏此 Prompt" : "加入收藏此 Prompt"}
+              aria-pressed={liked}
               data-pencil-name="Heart"
               className="text-[14px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex align-middle items-center gap-1"
             >
@@ -218,7 +208,6 @@ export default function PromptCard({ prompt, hideStats = false }) {
           {tags.map((tag, idx) => {
             const tagLabel = tag?.name || "";
             const style = getTagStyles(tagLabel);
-            // console.log("Tag style:", tag);
             return (
               <div
                 key={tag?.id || idx}
@@ -239,12 +228,13 @@ export default function PromptCard({ prompt, hideStats = false }) {
         <button
           type="button"
           onClick={handleCopy}
+          aria-label={copied ? "已複製至剪貼簿" : "複製 Prompt 內容至剪貼簿"}
           data-pencil-name="Copy Pill"
           className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
         >
           <div
             data-pencil-name="Copy Label"
-            className="text-[14px]/[normal] box-border text-[#00FFFF]  text-left whitespace-nowrap"
+            className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
           >
             {copied ? "已複製" : "複製"}
           </div>

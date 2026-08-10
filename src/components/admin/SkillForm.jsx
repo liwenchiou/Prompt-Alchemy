@@ -16,7 +16,7 @@ import {
   isUploadType,
   toBlocks,
   toPayload,
-} from "./exampleOutputBlocks";
+} from "../../utils/exampleOutputBlocks";
 
 // 共用的 input 樣式，抽出來避免每個欄位重複一長串 className。
 const inputClass =
