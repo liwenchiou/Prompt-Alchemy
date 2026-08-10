@@ -32,6 +32,13 @@ function normalizeAgentSkill(item) {
     excerptSource: item.excerptSource || "none",
     // repo 的 README.md（優先）或 SKILL.md raw 文字網址，前端直接 fetch 渲染，無此欄位時 fallback 顯示 intro。
     docUrl: item.docUrl || "",
+    // 安裝機制欄位（見 FRONTEND_API_SPEC.md 第 9 節）：gitCloneMethod 為 true 時，
+    // claudeInstallMethod／codexInstallMethod 一定是 false，改用 git clone 保底安裝。
+    claudeInstallMethod: item.claudeInstallMethod ?? false,
+    codexInstallMethod: item.codexInstallMethod ?? false,
+    claudePluginName: item.claudePluginName || "",
+    claudeMarketplaceName: item.claudeMarketplaceName || "",
+    gitCloneMethod: item.gitCloneMethod ?? false,
   };
 }
 

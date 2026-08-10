@@ -74,9 +74,23 @@ export default function SkillCard({ skill, hideStats = false }) {
       ? `${skill.repoOwner}/${skill.repoName}`
       : null;
 
-  const installCommand = repoLabel
-    ? `npx skills add https://github.com/${repoLabel} --skill ${skill?.skillSlug || skill?.name || ""}`
-    : "npx skills add https://github.com/owner/repo --skill skill-slug";
+  // 安裝機制判斷邏輯比照 FRONTEND_API_SPEC.md 第 9 節：gitCloneMethod 為 true 時，
+  // npx 對兩個 agent 都會裝壞，改用 git clone 保底；否則優先顯示 Claude Code 的 npx
+  // 指令，沒有才用 Codex（卡片空間有限，這裡只顯示單一預設指令，完整挑選 agent 的
+  // 介面留給詳情頁）。
+  const gitCloneOnly = Boolean(skill?.gitCloneMethod);
+  const defaultAgent = skill?.claudeInstallMethod
+    ? "claude-code"
+    : skill?.codexInstallMethod
+      ? "codex"
+      : null;
+
+  const installCommand =
+    gitCloneOnly && repoLabel
+      ? `git clone https://github.com/${repoLabel}.git`
+      : repoLabel && defaultAgent
+        ? `npx skills add ${repoLabel} --skill ${skill?.skillSlug || skill?.name || ""} -a ${defaultAgent}`
+        : "npx skills add owner/repo --skill skill-slug -a claude-code";
 
   return (
     <div
@@ -127,6 +141,33 @@ export default function SkillCard({ skill, hideStats = false }) {
               >
                 {skill.license}
               </span>
+            )}
+            {gitCloneOnly ? (
+              <span
+                data-pencil-name="Install Method Badge Git Clone"
+                className="text-[10px]/[normal] shrink-0 text-[#39FF14] border border-[#2a9c39] rounded px-1"
+              >
+                Git Clone
+              </span>
+            ) : (
+              <>
+                {skill?.claudeInstallMethod && (
+                  <span
+                    data-pencil-name="Install Method Badge Claude"
+                    className="text-[10px]/[normal] shrink-0 text-[#c084fc] border border-[#a855f7] rounded px-1"
+                  >
+                    Claude
+                  </span>
+                )}
+                {skill?.codexInstallMethod && (
+                  <span
+                    data-pencil-name="Install Method Badge Codex"
+                    className="text-[10px]/[normal] shrink-0 text-[#FF8C00] border border-[#cc7000] rounded px-1"
+                  >
+                    Codex
+                  </span>
+                )}
+              </>
             )}
           </div>
 
