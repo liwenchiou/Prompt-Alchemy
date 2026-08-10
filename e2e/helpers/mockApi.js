@@ -26,6 +26,55 @@ export async function setupMockApiRoutes(page) {
     },
   ];
 
+  const mockAgentSkills = [
+    {
+      id: "agent-skill-uuid-0001-0000-000000000001",
+      name: "frontend-design",
+      description:
+        "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one.",
+      intro: "打造有記憶點的前端視覺設計指引。",
+      repoOwner: "anthropics",
+      repoName: "skills",
+      skillSlug: "frontend-design",
+      creatorName: "anthropics",
+      creatorAvatarUrl: "https://avatars.githubusercontent.com/u/76263028?v=4",
+      creatorProfileUrl: "https://github.com/anthropics",
+      license: "MIT",
+      categoryId: "agent-category-frontend",
+      category: "前端開發",
+      stargazersCount: 167174,
+      copyCount: 12,
+      favoriteCount: 3,
+      isHot: true,
+      isActive: true,
+      createdAt: "2025-01-01T00:00:00.000Z",
+      updatedAt: "2025-01-01T00:00:00.000Z",
+    },
+    {
+      id: "agent-skill-uuid-0002-0000-000000000002",
+      name: "lazy-senior",
+      description:
+        "讓 AI 擁有最強的「極簡主義工程師」思維，堅守 YAGNI 原則，寫最少、最安全的程式碼。",
+      intro: "極簡主義工程師思維指南。",
+      repoOwner: "liwenchiou",
+      repoName: "liai",
+      skillSlug: "lazy-senior",
+      creatorName: "liwenchiou",
+      creatorAvatarUrl: "https://avatars.githubusercontent.com/u/30397088?v=4",
+      creatorProfileUrl: "https://github.com/liwenchiou",
+      license: "MIT",
+      categoryId: "agent-category-backend",
+      category: "後端開發",
+      stargazersCount: 12,
+      copyCount: 1,
+      favoriteCount: 0,
+      isHot: false,
+      isActive: true,
+      createdAt: "2025-01-02T00:00:00.000Z",
+      updatedAt: "2025-01-02T00:00:00.000Z",
+    },
+  ];
+
   const safeFulfill = async (route, fulfillOptions) => {
     try {
       await route.fulfill(fulfillOptions);
@@ -289,7 +338,59 @@ export async function setupMockApiRoutes(page) {
     });
   });
 
-  // 9. 後台 FAQ /admin/faqs Mock
+  // 9. Agent Skills 前台瀏覽 /agent-skills Mock（列表 + 詳情）
+  await page.route("**/agent-skills**", async (route) => {
+    try {
+      const response = await route.fetch();
+      if (response.ok()) {
+        await safeFulfill(route, { response });
+        return;
+      }
+    } catch {
+      // 後端沒開或連線失敗，自動回傳 Mock
+    }
+
+    const url = new URL(route.request().url());
+    const detailMatch = url.pathname.match(/\/agent-skills\/([^/]+)$/);
+
+    if (detailMatch) {
+      const target = mockAgentSkills.find((s) => s.id === detailMatch[1]);
+      await safeFulfill(route, {
+        status: target ? 200 : 404,
+        contentType: "application/json",
+        body: JSON.stringify(
+          target
+            ? { status: "success", data: target }
+            : { status: "error", message: "找不到該 Agent Skill" }
+        ),
+      });
+      return;
+    }
+
+    const keyword = (url.searchParams.get("keyword") || "").toLowerCase();
+    const categoryId = url.searchParams.get("categoryId") || "";
+    const filtered = mockAgentSkills.filter((s) => {
+      if (
+        keyword &&
+        !(
+          s.name.toLowerCase().includes(keyword) ||
+          s.intro.toLowerCase().includes(keyword)
+        )
+      ) {
+        return false;
+      }
+      if (categoryId && s.categoryId !== categoryId) return false;
+      return true;
+    });
+
+    await safeFulfill(route, {
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: "success", data: filtered }),
+    });
+  });
+
+  // 10. 後台 FAQ /admin/faqs Mock
   await page.route("**/admin/faqs**", async (route) => {
     try {
       const response = await route.fetch();

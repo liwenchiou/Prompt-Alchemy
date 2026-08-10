@@ -1,5 +1,6 @@
 import { createHashRouter } from "react-router-dom";
 import Agentskills from "../pages/agent-skill/agentSkills";
+import AgentSkillDetail from "../pages/agent-skill/AgentSkillDetail";
 import App from "../App";
 import HomeLayout from "../layouts/HomeLayout";
 import Home from "../pages/home/HomePage";
@@ -36,6 +37,7 @@ const router = createHashRouter([
             element: <SkillDetail />,
           },
           { path: "agent-skills", element: <Agentskills /> },
+          { path: "agent-skills/:id", element: <AgentSkillDetail /> },
           {
             element: <FavoriteLayout />,
             children: [

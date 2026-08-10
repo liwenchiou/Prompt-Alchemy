@@ -58,7 +58,7 @@ export default function SkillCard({ skill, hideStats = false }) {
   };
 
   const handleCardClick = () => {
-    navigate(`/skills/${skill.id || 1}`);
+    navigate(`/agent-skills/${skill.id}`);
   };
 
   const openExternal = (e, url) => {
@@ -74,7 +74,9 @@ export default function SkillCard({ skill, hideStats = false }) {
       ? `${skill.repoOwner}/${skill.repoName}`
       : null;
 
-  const installCommand = `npx add skills ${repoLabel || "owner/repo"}`;
+  const installCommand = repoLabel
+    ? `npx skills add https://github.com/${repoLabel} --skill ${skill?.skillSlug || skill?.name || ""}`
+    : "npx skills add https://github.com/owner/repo --skill skill-slug";
 
   return (
     <div
