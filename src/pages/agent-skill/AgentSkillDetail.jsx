@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Undo2, Star, GitFork, ExternalLink } from "lucide-react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { Undo2, Star, Heart, GitFork, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -9,6 +9,7 @@ import { getAgentSkillById } from "../../api/agentSkillApi";
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
 import { copyToClipboard } from "../../utils/copyToClipboard";
+import useAuth from "../../hooks/useAuth";
 import openaiIcon from "/openail.svg?url";
 import claudeIcon from "/claude-color.svg?url";
 import gitCloneIcon from "/github.svg?url";
@@ -66,6 +67,8 @@ function formatStars(count = 0) {
 
 export default function AgentSkillDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, favorites, favoriteCounts, toggleFavorite } = useAuth();
   const [skill, setSkill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -164,6 +167,17 @@ export default function AgentSkillDetail() {
       </div>
     );
   }
+
+  const liked = favorites.includes(skill.id);
+  const likesCount = favoriteCounts[skill.id] ?? skill.favoriteCount ?? 0;
+
+  const handleLike = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    toggleFavorite(skill.id);
+  };
 
   const categoryName = skill.categoryName || "小工具";
   const categoryStyle = getTagStyles(categoryName);
@@ -265,9 +279,24 @@ export default function AgentSkillDetail() {
                 {skill.creatorName || "unknown"}
               </span>
             )}
-            <div className="ml-auto flex items-center gap-1 text-[#FFD700] text-[13px]">
-              <Star size={14} fill="#FFD700" />
-              {formatStars(skill.stargazersCount)}
+            <div className="ml-auto flex flex-col items-end gap-1 shrink-0">
+              <div className="flex items-center gap-1 text-[#FFD700] text-[13px]">
+                <Star size={16} fill="#FFD700" />
+                {formatStars(skill.stargazersCount)}
+              </div>
+              <button
+                type="button"
+                onClick={handleLike}
+                data-pencil-name="Heart"
+                className="text-[13px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex items-center gap-1"
+              >
+                {liked ? (
+                  <Heart size={16} fill="#fc4c87" />
+                ) : (
+                  <Heart size={16} />
+                )}
+                {likesCount}
+              </button>
             </div>
           </div>
 
