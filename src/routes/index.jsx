@@ -7,6 +7,7 @@ import Home from "../pages/home/HomePage";
 import Skills from "../pages/prompt/SkillsPage";
 import SkillDetail from "../pages/prompt/SkillDetailPage";
 import Favorite from "../pages/favorite/FavoritePage";
+import FavoriteSkills from "../pages/favorite/FavoriteSkillsPage";
 import Login from "../pages/member/LoginPage";
 import Register from "../pages/member/RegisterPage";
 import Profile from "../pages/favorite/ProfilePage";
@@ -44,6 +45,10 @@ const router = createHashRouter([
               {
                 path: "favorites",
                 element: <Favorite />,
+              },
+              {
+                path: "favorites/skills",
+                element: <FavoriteSkills />,
               },
               {
                 path: "favorites/profile",

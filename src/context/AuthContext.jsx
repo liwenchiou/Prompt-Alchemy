@@ -21,7 +21,19 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [favoriteCounts, setFavoriteCounts] = useState({});
+  const [skillFavorites, setSkillFavorites] = useState([]);
+  const [skillFavoriteCounts, setSkillFavoriteCounts] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const loadSkillFavorites = async () => {
+    try {
+      const favs = await getUserFavoriteAPI("skill");
+      setSkillFavorites(favs);
+    } catch (err) {
+      console.warn("讀取 Skill 收藏失敗", err.message);
+      setSkillFavorites([]);
+    }
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -37,12 +49,14 @@ export function AuthProvider({ children }) {
 
           const favs = await getUserFavoriteAPI();
           setFavorites(favs);
+          await loadSkillFavorites();
         } catch (err) {
           console.warn("Token 即將或已無效，清除本地 Token", err.message);
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           setUser(null);
           setFavorites([]);
+          setSkillFavorites([]);
         }
       } else if (!IS_ONLINE_MODE && storedUser) {
         try {
@@ -51,6 +65,7 @@ export function AuthProvider({ children }) {
 
           const favs = await getUserFavoriteAPI();
           setFavorites(favs);
+          await loadSkillFavorites();
         } catch (err) {
           localStorage.removeItem("user");
         }
@@ -63,6 +78,7 @@ export function AuthProvider({ children }) {
     const unsubscribe = eventBus.on("auth:expired", () => {
       setUser(null);
       setFavorites([]);
+      setSkillFavorites([]);
       alertHelper.error("登入逾期", "您的登入已過期，請重新登入", true);
     });
 
@@ -84,6 +100,7 @@ export function AuthProvider({ children }) {
       console.error("讀取收藏失敗", err);
       setFavorites([]);
     }
+    await loadSkillFavorites();
 
     if (showSuccessAlert) {
       alertHelper.success(
@@ -98,6 +115,7 @@ export function AuthProvider({ children }) {
     apiLogoutUser();
     setUser(null);
     setFavorites([]);
+    setSkillFavorites([]);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     alertHelper.success("已登出", "您已安全登出帳號", true);
@@ -143,6 +161,37 @@ export function AuthProvider({ children }) {
       }
     } catch (err) {
       console.error("Failed to toggle favorite via API", err);
+      alertHelper.error("收藏失敗", "目前無法同步到伺服器", true);
+    }
+  };
+
+  const toggleSkillFavorite = async (skillId) => {
+    if (!user) return;
+
+    const isAlreadyFav = skillFavorites.includes(skillId);
+
+    try {
+      const result = await toggleFavoriteAPI(skillId, "skill");
+
+      setSkillFavorites((prev) =>
+        prev.includes(skillId)
+          ? prev.filter((id) => id !== skillId)
+          : [...prev, skillId]
+      );
+      if (typeof result?.favoriteCount === "number") {
+        setSkillFavoriteCounts((prev) => ({
+          ...prev,
+          [skillId]: result.favoriteCount,
+        }));
+      }
+
+      if (!isAlreadyFav) {
+        alertHelper.success("已收藏", "已加入您的收藏清單", true);
+      } else {
+        alertHelper.success("已取消收藏", "已從您的收藏清單移除", true);
+      }
+    } catch (err) {
+      console.error("Failed to toggle skill favorite via API", err);
       alertHelper.error("收藏失敗", "目前無法同步到伺服器", true);
     }
   };
@@ -196,6 +245,9 @@ export function AuthProvider({ children }) {
         favorites,
         favoriteCounts,
         toggleFavorite,
+        skillFavorites,
+        skillFavoriteCounts,
+        toggleSkillFavorite,
         clearFavorites,
         resetFavorites,
       }}

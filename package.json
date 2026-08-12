@@ -25,6 +25,7 @@
     "react-router-dom": "^7.18.1",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
+    "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "sweetalert2": "^11.26.25",
     "swiper": "^14.0.6"

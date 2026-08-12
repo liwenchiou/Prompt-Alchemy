@@ -1,64 +1,38 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Undo2, Star, Heart, GitFork, ExternalLink } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeRaw from "rehype-raw";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import MarkdownDoc from "../../components/MarkdownDoc/MarkdownDoc";
 import { getAgentSkillById } from "../../api/agentSkillApi";
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
 import { copyToClipboard } from "../../utils/copyToClipboard";
 import useAuth from "../../hooks/useAuth";
-import openaiIcon from "/openail.svg?url";
-import claudeIcon from "/claude-color.svg?url";
+import {
+  getDefaultAgent,
+  getInstallDisplay,
+} from "../../components/SkillCard/installCommands";
+import { getAvailableAgentOptions } from "../../components/SkillCard/agentOptions";
 import gitCloneIcon from "/github.svg?url";
 
-const INSTALL_ROW_BADGE_STYLES = {
-  claude: "text-[#d97757] border-[#d97757]",
-  codex: "text-[#FFFFFF] border-[#FFFFFF]",
-  "git-clone": "text-[#FFFFFF] border-[#FFFFFF]",
-};
-
-function isAlignAttribute(attribute) {
-  return (Array.isArray(attribute) ? attribute[0] : attribute) === "align";
-}
-
-// rehype-sanitize 預設允許 legacy 的 align 屬性（<p align="center"> 這種 README 常見寫法），
-// 瀏覽器仍會照做置中；拿掉它讓內容一律吃我們自己的排版樣式，不受來源 repo 影響。
-const MARKDOWN_SANITIZE_SCHEMA = {
-  ...defaultSchema,
-  attributes: Object.fromEntries(
-    Object.entries(defaultSchema.attributes || {}).map(([tag, attributes]) => [
-      tag,
-      (attributes || []).filter((attribute) => !isAlignAttribute(attribute)),
-    ])
-  ),
-};
-
-// 比照 GitHub 的呈現，讓解析出來的原始 HTML（README 常見的 <picture>/<img> 響應式圖片）
-// 也能正常渲染；rehypeSanitize 接在後面過濾掉腳本等危險標籤/屬性，防止第三方 repo 的 XSS。
-const MARKDOWN_REHYPE_PLUGINS = [
-  rehypeRaw,
-  [rehypeSanitize, MARKDOWN_SANITIZE_SCHEMA],
-];
-
-// 沒有 Tailwind Typography 外掛，這裡手刻對應暗色主題的 Markdown 排版樣式。
 const MARKDOWN_CONTENT_CLASS =
-  "text-[14px] text-[#E0F0E8] " +
-  "[&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-4 [&_h1]:mb-2 " +
-  "[&_h2]:text-[19px] [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-4 [&_h2]:mb-2 " +
-  "[&_h3]:text-[16px] [&_h3]:font-bold [&_h3]:text-white [&_h3]:mt-3 [&_h3]:mb-1.5 " +
-  "[&_p]:my-2 [&_p]:leading-relaxed " +
-  "[&_a]:text-[#39FF14] [&_a]:underline [&_a:hover]:text-[#00FFFF] " +
-  "[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:my-1 " +
-  "[&_code]:bg-[#111827] [&_code]:text-[#00FFFF] [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[13px] " +
-  "[&_pre]:bg-[#05080C] [&_pre]:border [&_pre]:border-[#1A3A2A] [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:overflow-x-auto " +
-  "[&_pre_code]:bg-transparent [&_pre_code]:px-0 [&_pre_code]:py-0 " +
-  "[&_blockquote]:border-l-2 [&_blockquote]:border-[#39FF14]/50 [&_blockquote]:pl-3 [&_blockquote]:text-[#7DCEA0] " +
-  "[&_img]:max-w-full [&_img]:rounded-lg " +
-  "[&_table]:border-collapse [&_th]:border [&_th]:border-[#1A3A2A] [&_th]:p-2 [&_td]:border [&_td]:border-[#1A3A2A] [&_td]:p-2 " +
-  "[&_hr]:border-[#1A3A2A] [&_hr]:my-4";
+  "text-[14px]! text-[#E0F0E8]! " +
+  "[&_h1]:text-[18px]! [&_h1]:sm:text-[22px]! [&_h1]:leading-snug! [&_h1]:font-bold! [&_h1]:text-white! [&_h1]:mt-4! [&_h1]:mb-2! " +
+  "[&_h2]:text-[16px]! [&_h2]:sm:text-[19px]! [&_h2]:leading-snug! [&_h2]:font-bold! [&_h2]:text-white! [&_h2]:mt-4! [&_h2]:mb-2! " +
+  "[&_h3]:text-[15px]! [&_h3]:sm:text-[16px]! [&_h3]:leading-snug! [&_h3]:font-bold! [&_h3]:text-white! [&_h3]:mt-3! [&_h3]:mb-1.5! " +
+  "[&_h4]:text-[14px]! [&_h4]:leading-snug! [&_h4]:font-bold! [&_h4]:text-white! [&_h4]:mt-3! [&_h4]:mb-1.5! " +
+  "[&_h5]:text-[14px]! [&_h5]:leading-snug! [&_h5]:font-semibold! [&_h5]:text-white! [&_h5]:mt-2! [&_h5]:mb-1! " +
+  "[&_h6]:text-[13px]! [&_h6]:leading-snug! [&_h6]:font-semibold! [&_h6]:text-[#7DCEA0]! [&_h6]:mt-2! [&_h6]:mb-1! " +
+  "[&_p]:my-2! [&_p]:leading-relaxed! " +
+  "[&_a]:text-[#39FF14]! [&_a]:underline! [&_a:hover]:text-[#00FFFF]! " +
+  "[&_ul]:list-disc! [&_ul]:pl-5! [&_ul]:my-2! [&_ol]:list-decimal! [&_ol]:pl-5! [&_ol]:my-2! [&_li]:my-1! " +
+  "[&_code]:bg-[#111827]! [&_code]:text-[#00FFFF]! [&_code]:rounded! [&_code]:px-1! [&_code]:py-0.5! [&_code]:text-[13px]! " +
+  "[&_pre]:bg-[#05080C]! [&_pre]:border! [&_pre]:border-[#1A3A2A]! [&_pre]:rounded-lg! [&_pre]:p-3! [&_pre]:overflow-x-auto! " +
+  "[&_pre_code]:bg-transparent! [&_pre_code]:px-0! [&_pre_code]:py-0! " +
+  "[&_blockquote]:border-l-2! [&_blockquote]:border-[#39FF14]/50! [&_blockquote]:pl-3! [&_blockquote]:text-[#7DCEA0]! " +
+  "[&_img]:max-w-full! [&_img]:h-auto! [&_img]:rounded-lg! " +
+  "[&_table]:block! [&_table]:w-full! [&_table]:overflow-x-auto! [&_table]:border-collapse! " +
+  "[&_th]:border! [&_th]:border-[#1A3A2A]! [&_th]:p-2! [&_td]:border! [&_td]:border-[#1A3A2A]! [&_td]:p-2! " +
+  "[&_hr]:border-[#1A3A2A]! [&_hr]:my-4!";
 
 function formatStars(count = 0) {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
@@ -68,11 +42,18 @@ function formatStars(count = 0) {
 export default function AgentSkillDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, favorites, favoriteCounts, toggleFavorite } = useAuth();
+  const { user, skillFavorites, skillFavoriteCounts, toggleSkillFavorite } =
+    useAuth();
   const [skill, setSkill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [copiedKey, setCopiedKey] = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [prevAgentSkillId, setPrevAgentSkillId] = useState(null);
+  if (skill && skill.id !== prevAgentSkillId) {
+    setPrevAgentSkillId(skill.id);
+    setSelectedAgent(getDefaultAgent(skill));
+  }
 
   usePageLoading(!loading);
 
@@ -121,8 +102,6 @@ export default function AgentSkillDetail() {
 
     let active = true;
 
-    // docUrl 指向 raw.githubusercontent.com 的 README.md／SKILL.md 純文字內容，
-    // 有開放 CORS，前端直接 fetch 渲染，不透過後端代理。
     fetch(docUrl)
       .then((res) => {
         if (!res.ok) throw new Error("doc fetch failed");
@@ -158,25 +137,25 @@ export default function AgentSkillDetail() {
         <div className="text-[18px] text-[#7DCEA0]">
           找不到這個 Agent Skill。
         </div>
-        <Link
-          to="/agent-skills"
+        <button
+          onClick={() => navigate(-1)}
           className="text-[#39FF14] underline text-[12px]"
         >
           返回列表
-        </Link>
+        </button>
       </div>
     );
   }
 
-  const liked = favorites.includes(skill.id);
-  const likesCount = favoriteCounts[skill.id] ?? skill.favoriteCount ?? 0;
+  const liked = skillFavorites.includes(skill.id);
+  const likesCount = skillFavoriteCounts[skill.id] ?? skill.favoriteCount ?? 0;
 
   const handleLike = () => {
     if (!user) {
       navigate("/login");
       return;
     }
-    toggleFavorite(skill.id);
+    toggleSkillFavorite(skill.id);
   };
 
   const categoryName = skill.categoryName || "小工具";
@@ -188,41 +167,14 @@ export default function AgentSkillDetail() {
   const repoUrl = repoLabel ? `https://github.com/${repoLabel}` : "";
   const ownerAvatarUrl = skill.repoOwnerAvatarUrl || skill.creatorAvatarUrl;
 
-  // 安裝機制判斷邏輯比照 FRONTEND_API_SPEC.md 第 9 節：兩個 agent 的安裝機制完全獨立、
-  // 各自最多一種、不並存——Claude Code 一律走 Claude Plugin（兩行指令），Codex 一律走
-  // npx（一行指令），兩者不會混在一起。gitCloneMethod 為 true 時兩者皆不提供，改用
-  // git clone 保底，此時 claudeInstallMethod／codexInstallMethod 一定都是 false。
-  const gitCloneOnly = Boolean(skill.gitCloneMethod);
-
-  const claudeCommand =
-    !gitCloneOnly && skill.claudeInstallMethod && repoLabel
-      ? [
-          `claude plugin marketplace add ${repoLabel}`,
-          `claude plugin install ${skill.claudePluginName || ""}@${skill.claudeMarketplaceName || ""}`,
-        ].join("\n")
-      : "";
-
-  const codexCommand =
-    !gitCloneOnly && skill.codexInstallMethod && repoLabel
-      ? `npx skills add ${repoLabel} --skill ${skill.skillSlug || skill.name || ""} -a codex`
-      : "";
-
-  const gitCloneCommand =
-    gitCloneOnly && repoLabel
-      ? `git clone https://github.com/${repoLabel}.git`
-      : "";
-
-  // 任一安裝方式不滿足就不顯示該行；gitCloneMethod 為 true 時只顯示保底的 git clone 一行。
-  const installRows = gitCloneCommand
-    ? [{ key: "git-clone", label: "Git Clone", command: gitCloneCommand }]
-    : [
-        claudeCommand && {
-          key: "claude",
-          label: "Claude",
-          command: claudeCommand,
-        },
-        codexCommand && { key: "codex", label: "Codex", command: codexCommand },
-      ].filter(Boolean);
+  const {
+    installRows,
+    installShape,
+    isGitClone,
+    selectedRow,
+    availableAgents,
+  } = getInstallDisplay(skill, selectedAgent);
+  const availableAgentOptions = getAvailableAgentOptions(availableAgents);
 
   const handleCopyInstallCommand = async (command, key) => {
     const success = await copyToClipboard(command);
@@ -233,9 +185,7 @@ export default function AgentSkillDetail() {
       }, 2000);
     }
   };
-  // 08 號票（GitHub metadata 同步）補上真正的 README 摘要前，excerptSource
-  // 一律是 'none'，此時改顯示 Admin 填的 intro；intro 也是空的話再退到
-  // description，最後才用固定文字兜底，確保這個區塊永遠不會顯示空白。
+
   const excerptText =
     (skill.excerptSource !== "none" && skill.readmeExcerpt) ||
     skill.intro ||
@@ -248,13 +198,14 @@ export default function AgentSkillDetail() {
         data-pencil-name="Agent Skill Detail Content"
         className="box-border w-full max-w-350 flex flex-col gap-5.5 py-3 justify-start items-start text-left"
       >
-        <Link
-          to="/agent-skills"
-          className="flex flex-row gap-2.5 justify-start items-center no-underline hover:opacity-80 transition-opacity"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="flex flex-row gap-2.5 justify-start items-center bg-transparent border-0 cursor-pointer hover:opacity-80 transition-opacity"
         >
           <Undo2 className="w-4 h-4 shrink-0 text-[#7DCEA0]" />
-          <span className="text-[16px] text-[#7DCEA0]">返回列表</span>
-        </Link>
+          <span className="text-[16px] text-[#7DCEA0]">返回上一頁</span>
+        </button>
 
         <div className="w-full flex flex-col gap-3.5">
           <div className="flex items-center gap-3 flex-wrap">
@@ -280,20 +231,20 @@ export default function AgentSkillDetail() {
               </span>
             )}
             <div className="ml-auto flex flex-col items-end gap-1 shrink-0">
-              <div className="flex items-center gap-1 text-[#FFD700] text-[13px]">
-                <Star size={16} fill="#FFD700" />
+              <div className="flex items-center gap-1 text-[#FFD700] text-[16px]">
+                <Star size={18} fill="#FFD700" />
                 {formatStars(skill.stargazersCount)}
               </div>
               <button
                 type="button"
                 onClick={handleLike}
                 data-pencil-name="Heart"
-                className="text-[13px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex items-center gap-1"
+                className="text-[16px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex items-center gap-1"
               >
                 {liked ? (
-                  <Heart size={16} fill="#fc4c87" />
+                  <Heart size={18} fill="#fc4c87" />
                 ) : (
-                  <Heart size={16} />
+                  <Heart size={18} />
                 )}
                 {likesCount}
               </button>
@@ -338,70 +289,103 @@ export default function AgentSkillDetail() {
             </p>
           )}
 
-          {/* 安裝指令：Claude／Codex／Git Clone 各自安裝機制不同，各佔一行，任一方不滿足就不顯示 */}
           <div className="box-border w-full flex flex-col gap-3 border border-[#f9bc2c] rounded-2xl p-4.5">
             {installRows.length > 0 ? (
-              installRows.map((row) => (
-                <div
-                  key={row.key}
-                  className="box-border w-full flex flex-col gap-1"
-                >
-                  <div
-                    data-pencil-name={`Install Method Badge ${row.label}`}
-                    className={`text-[13px]/[normal] w-fit shrink-0 flex align-middle border rounded-[4px] p-1 ${
-                      INSTALL_ROW_BADGE_STYLES[row.key] ||
-                      "text-[#7DCEA0] border-[#1A3A2A]"
-                    }`}
+              <div className="box-border w-full flex flex-col gap-1.5">
+                {installShape && (
+                  <span
+                    data-pencil-name="Install Shape Badge"
+                    className="w-fit text-[10px]/[normal] shrink-0 text-[#7DCEA0] border border-[#1A3A2A] rounded px-1"
                   >
-                    {openaiIcon && row.key === "codex" && (
-                      <img
-                        src={openaiIcon}
-                        alt="OpenAI Icon"
-                        className="w-4 h-4 inline-block mr-1 brightness-0 invert"
-                      />
-                    )}
-                    {claudeIcon && row.key === "claude" && (
-                      <img
-                        src={claudeIcon}
-                        alt="Claude Icon"
-                        className="w-4 h-4 inline-block mr-1"
-                      />
-                    )}
-                    {gitCloneIcon && row.key === "git-clone" && (
-                      <img
-                        src={gitCloneIcon}
-                        alt="Git Clone Icon"
-                        className="w-4 h-4 inline-block mr-1 brightness-0 invert"
-                      />
-                    )}
-                    <span>{row.label}</span>
+                    {installShape === "single-kit"
+                      ? "Single kit"
+                      : "Full package"}
+                  </span>
+                )}
+
+                {availableAgentOptions.length > 0 && (
+                  <div
+                    data-pencil-name="Agent Picker"
+                    className="flex flex-wrap gap-1.5"
+                  >
+                    {availableAgentOptions.map((option) => {
+                      const isSelected = option.agent === selectedAgent;
+                      return (
+                        <button
+                          key={option.agent}
+                          type="button"
+                          onClick={() => setSelectedAgent(option.agent)}
+                          aria-pressed={isSelected}
+                          data-pencil-name={`Agent Option ${option.label}`}
+                          className={`text-[12px]/[normal] flex items-center gap-1 py-1 px-2 rounded-[4px] border cursor-pointer transition-colors ${
+                            isSelected
+                              ? "bg-[#39FF14]/15 border-[#39FF14] text-[#39FF14]"
+                              : "bg-transparent border-[#1A3A2A] text-[#7DCEA0] hover:border-[#39FF14]/40"
+                          }`}
+                        >
+                          <img
+                            src={option.icon}
+                            alt={option.alt}
+                            className={`w-3.5 h-3.5 inline-block ${
+                              option.invert ? "brightness-0 invert" : ""
+                            }`}
+                          />
+                          <span>{option.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="box-border w-full flex justify-between items-center gap-2">
+                )}
+
+                {isGitClone && (
+                  <div
+                    data-pencil-name="Install Method Badge Git Clone"
+                    className="text-[13px]/[normal] w-fit shrink-0 flex items-center gap-1 border border-[#FFFFFF] rounded-[4px] p-1 text-[#FFFFFF]"
+                  >
+                    <img
+                      src={gitCloneIcon}
+                      alt="Git Clone Icon"
+                      className="w-4 h-4 inline-block brightness-0 invert"
+                    />
+                    <span>Git Clone</span>
+                  </div>
+                )}
+
+                {selectedRow ? (
+                  <>
                     <div
-                      data-pencil-name={`Install Command ${row.label}`}
+                      data-pencil-name={`Install Command ${selectedRow.label}`}
                       className="text-[13px]/[18px] box-border text-[#d4d9d6] font-mono text-left whitespace-pre-wrap wrap-break-word bg-[rgba(21,70,12,0.7)] rounded-[4px] w-full px-2 py-2 hover:text-[#ffffff]"
                     >
-                      {row.command}
+                      {selectedRow.command}
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleCopyInstallCommand(row.command, row.key)
-                      }
-                      data-pencil-name={`Copy Pill ${row.label}`}
-                      className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
-                    >
-                      <div
-                        data-pencil-name={`Copy Label ${row.label}`}
-                        className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
+                    <div className="box-border w-full flex justify-end items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopyInstallCommand(
+                            selectedRow.command,
+                            selectedRow.key
+                          )
+                        }
+                        data-pencil-name={`Copy Pill ${selectedRow.label}`}
+                        className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
                       >
-                        {copiedKey === row.key ? "已複製" : "複製"}
-                      </div>
-                    </button>
+                        <div
+                          data-pencil-name={`Copy Label ${selectedRow.label}`}
+                          className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
+                        >
+                          {copiedKey === selectedRow.key ? "已複製" : "複製"}
+                        </div>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-[12px]/[normal] box-border text-[#7DCEA0]/70 text-left">
+                    此 Skill 不支援目前選擇的 agent。
                   </div>
-                </div>
-              ))
+                )}
+              </div>
             ) : (
               <div className="text-[12px]/[normal] box-border text-[#7DCEA0]/70 text-left">
                 尚無安裝指令。
@@ -440,12 +424,7 @@ export default function AgentSkillDetail() {
                   data-testid="skill-doc-content"
                   className={MARKDOWN_CONTENT_CLASS}
                 >
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={MARKDOWN_REHYPE_PLUGINS}
-                  >
-                    {docContent}
-                  </ReactMarkdown>
+                  <MarkdownDoc content={docContent} baseUrl={docUrl} />
                 </div>
               )
             ) : (

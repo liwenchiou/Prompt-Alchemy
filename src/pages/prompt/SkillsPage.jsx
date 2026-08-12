@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
+import { LayoutGrid, Sparkles } from "lucide-react";
 import PromptCard from "../../components/PromptCard/PromptCard";
 import {
   getPublishedPrompts,
@@ -11,6 +12,19 @@ import {
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
 import { eventBus } from "../../utils/eventBus";
+import useCollapsible from "../../hooks/useCollapsible";
+import SidebarCollapseToggle from "../../components/SidebarCollapseToggle/SidebarCollapseToggle";
+import {
+  CATEGORY_ICONS,
+  DEFAULT_CATEGORY_ICON,
+} from "../../utils/categoryIcons";
+
+// 「全部」「最新Prompts」不是實際的 Prompt 分類，比照 HomePage.jsx 的分類圖示，
+// 額外指定圖示；其餘動態分類則交給 CATEGORY_ICONS 依名稱對應。
+const SPECIAL_CATEGORY_ICONS = {
+  全部: LayoutGrid,
+  最新Prompts: Sparkles,
+};
 
 const categoryMemoToast = Swal.mixin({
   toast: true,
@@ -37,6 +51,7 @@ export default function Skills() {
   const [prompts, setPrompts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
+  const [sidebarCollapsed, toggleSidebarCollapsed] = useCollapsible();
   const promptsRequestId = useRef(0);
 
   // 資料就緒後關閉 loading
@@ -180,89 +195,112 @@ export default function Skills() {
         {/* Filters Sidebar */}
         <div
           data-pencil-name="Filters Sidebar"
-          className="box-border w-full lg:w-62.5 shrink-0 flex flex-col gap-3.5 p-4.5 justify-start items-stretch bg-[#111827] border border-[#1A3A2A] rounded-2xl"
+          className={`box-border relative self-start h-fit w-full ${
+            sidebarCollapsed ? "lg:w-fit" : "lg:w-62.5"
+          } shrink-0 flex flex-col gap-3.5 p-4.5 justify-start items-stretch bg-[#111827] border border-[#1A3A2A] rounded-2xl transition-all duration-300`}
         >
-          <div
-            data-pencil-name="Sidebar Heading"
-            className="text-[18px]/[normal] box-border text-[#FFD700] font-bold text-left whitespace-nowrap"
-          >
-            分類清單
+          <div className="hidden lg:block absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/2 z-10">
+            <SidebarCollapseToggle
+              collapsed={sidebarCollapsed}
+              onToggle={toggleSidebarCollapsed}
+            />
           </div>
 
-          {visibleCategories.map((cat) => {
-            const isSelected = selectedCategory === cat.name;
-            return (
-              <button
-                key={cat.id || cat.name}
-                type="button"
-                onClick={() => handleCategorySelect(cat.name)}
-                onMouseEnter={(e) => handleCategoryMouseEnter(cat, e)}
-                onMouseLeave={handleCategoryMouseLeave}
-                className={`box-border w-full h-fit flex flex-row gap-2 py-2.5 px-3 justify-start items-center border-0 rounded-lg cursor-pointer transition-all duration-200 ${
-                  isSelected
-                    ? "bg-[#39FF14] text-[#0A0E1A] font-semibold"
-                    : "bg-transparent text-[#7DCEA0] hover:bg-[#39FF14]/10"
-                }`}
-              >
-                {cat.icon && (
-                  <span
-                    className={`text-[12px]/[normal] ${isSelected ? "text-[#0A0E1A]" : cat.iconColor}`}
-                  >
-                    {cat.icon}
-                  </span>
-                )}
-                <span className="text-[16px]/[normal] whitespace-nowrap">
-                  {cat.name}
-                </span>
-              </button>
-            );
-          })}
-
-          {isCompactScreen && categories.length > 5 && (
-            <button
-              type="button"
-              onClick={() => setIsCategoryExpanded((prev) => !prev)}
-              className="mt-1 w-full rounded-lg border border-[#1A3A2A] bg-transparent py-2 text-[14px] text-[#7DCEA0] transition-all hover:bg-[#39FF14]/10"
+          {!sidebarCollapsed && (
+            <div
+              data-pencil-name="Sidebar Heading"
+              className="hidden lg:block text-[18px]/[normal] box-border text-[#FFD700] font-bold text-left whitespace-nowrap"
             >
-              {isCategoryExpanded ? "收合分類" : "展開更多分類"}
-            </button>
+              分類清單
+            </div>
           )}
 
           <div
-            data-pencil-name="Tag Heading"
-            className="text-[18px]/[normal] box-border text-[#FFD700] font-bold text-left whitespace-nowrap mt-4"
+            data-pencil-name="Category Icon Row"
+            className={`box-border w-full flex flex-row lg:flex-col gap-1 lg:gap-3.5 justify-around lg:justify-start items-center ${
+              sidebarCollapsed ? "lg:items-center" : "lg:items-stretch"
+            }`}
           >
-            標籤
-          </div>
-
-          <div
-            data-pencil-name="Tag Column"
-            className="box-border w-full h-fit flex flex-wrap gap-2 justify-start items-start mt-2"
-          >
-            {tags.map((tag) => {
-              const style = getTagStyles(tag.name);
-              const isSelected = selectedTag === tag.name;
-              // console.log("tag", style);
+            {visibleCategories.map((cat) => {
+              const isSelected = selectedCategory === cat.name;
+              const CategoryIcon =
+                SPECIAL_CATEGORY_ICONS[cat.name] ||
+                CATEGORY_ICONS[cat.name] ||
+                DEFAULT_CATEGORY_ICON;
               return (
                 <button
-                  key={tag.id}
+                  key={cat.id || cat.name}
                   type="button"
-                  onClick={() => handleTagToggle(tag.name)}
-                  className={`box-border w-fit h-fit flex flex-row gap-0 py-1.5 px-2.5 justify-start items-start rounded-[999px] border cursor-pointer transition-all ${
+                  onClick={() => handleCategorySelect(cat.name)}
+                  onMouseEnter={(e) => handleCategoryMouseEnter(cat, e)}
+                  onMouseLeave={handleCategoryMouseLeave}
+                  className={`box-border w-auto lg:w-full h-fit flex flex-row gap-0 lg:gap-2 py-2 px-2 lg:py-2.5 lg:px-3 justify-center lg:justify-start items-center border-0 rounded-lg cursor-pointer transition-all duration-200 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } ${
                     isSelected
-                      ? `bg-transparent ${style.border} ring-2 ring-offset-2 ring-offset-[#111827] ring-[#00FFFF]`
-                      : `${style.bg} ${style.border} hover:font-bold hover:opacity-80 `
+                      ? "bg-[#39FF14] text-[#0A0E1A] font-semibold"
+                      : "bg-transparent text-[#7DCEA0] hover:bg-[#39FF14]/10"
                   }`}
                 >
-                  <span
-                    className={`text-[14px]/[normal] ${style.text} whitespace-nowrap`}
-                  >
-                    {tag.name}
-                  </span>
+                  <CategoryIcon size={18} className="shrink-0" />
+                  {!sidebarCollapsed && (
+                    <span className="hidden lg:inline text-[16px]/[normal] whitespace-nowrap">
+                      {cat.name}
+                    </span>
+                  )}
                 </button>
               );
             })}
+
+            {isCompactScreen && categories.length > 5 && !sidebarCollapsed && (
+              <button
+                type="button"
+                onClick={() => setIsCategoryExpanded((prev) => !prev)}
+                className="hidden lg:block mt-1 w-full rounded-lg border border-[#1A3A2A] bg-transparent py-2 text-[14px] text-[#7DCEA0] transition-all hover:bg-[#39FF14]/10"
+              >
+                {isCategoryExpanded ? "收合分類" : "展開更多分類"}
+              </button>
+            )}
           </div>
+
+          {!sidebarCollapsed && (
+            <>
+              <div
+                data-pencil-name="Tag Heading"
+                className="text-[18px]/[normal] box-border text-[#FFD700] font-bold text-left whitespace-nowrap mt-4"
+              >
+                標籤
+              </div>
+
+              <div
+                data-pencil-name="Tag Column"
+                className="box-border w-full h-fit flex flex-wrap gap-2 justify-start items-start mt-2"
+              >
+                {tags.map((tag) => {
+                  const style = getTagStyles(tag.name);
+                  const isSelected = selectedTag === tag.name;
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => handleTagToggle(tag.name)}
+                      className={`box-border w-fit h-fit flex flex-row gap-0 py-1.5 px-2.5 justify-start items-start rounded-[999px] border cursor-pointer transition-all ${
+                        isSelected
+                          ? `bg-transparent ${style.border} ring-2 ring-offset-2 ring-offset-[#111827] ring-[#00FFFF]`
+                          : `${style.bg} ${style.border} hover:font-bold hover:opacity-80 `
+                      }`}
+                    >
+                      <span
+                        className={`text-[14px]/[normal] ${style.text} whitespace-nowrap`}
+                      >
+                        {tag.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Skill List Region */}

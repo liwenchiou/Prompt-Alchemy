@@ -1,52 +1,38 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Heart, Star, GitFork } from "lucide-react";
 import { copyToClipboard } from "../../utils/copyToClipboard";
 import useAuth from "../../hooks/useAuth";
-import {
-  Heart,
-  Star,
-  GitFork,
-  CodeXml,
-  Database,
-  Bug,
-  PocketKnife,
-  Rocket,
-  ShieldCheck,
-  FileText,
-} from "lucide-react";
 import { getTagStyles } from "../../utils/tagStyles";
-import openaiIcon from "/openail.svg?url";
-import claudeIcon from "/claude-color.svg?url";
+import {
+  CATEGORY_ICONS,
+  DEFAULT_CATEGORY_ICON,
+} from "../../utils/categoryIcons";
 import gitCloneIcon from "/github.svg?url";
-
-const CATEGORY_ICONS = {
-  前端開發: CodeXml,
-  後端開發: Database,
-  除錯技巧: Bug,
-  小工具: PocketKnife,
-  "DevOps / 部署維運": Rocket,
-  "測試 / 品質保證": ShieldCheck,
-  "文件 / 寫作": FileText,
-};
-
-const INSTALL_ROW_BADGE_STYLES = {
-  claude: "text-[#d97757] border-[#d97757]",
-  codex: "text-[#FFFFFF] border-[#FFFFFF]",
-  "git-clone": "text-[#FFFFFF] border-[#FFFFFF]",
-};
+import { getDefaultAgent, getInstallDisplay } from "./installCommands";
+import { getAvailableAgentOptions } from "./agentOptions";
 
 function formatStars(count = 0) {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
   return `${count}`;
 }
 
-export default function SkillCard({ skill, hideStats = false }) {
+export default function SkillCard({
+  skill,
+  hideStats = false,
+  onToggleFavorite,
+}) {
   const navigate = useNavigate();
-  const { user, favorites, favoriteCounts, toggleFavorite } = useAuth();
+  const { user, skillFavorites, skillFavoriteCounts, toggleSkillFavorite } =
+    useAuth();
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const liked = favorites.includes(skill.id);
-  const likesCount = favoriteCounts[skill.id] ?? skill?.favoriteCount ?? 0;
+  const [selectedAgent, setSelectedAgent] = useState(() =>
+    getDefaultAgent(skill)
+  );
+
+  const liked = skillFavorites.includes(skill.id);
+  const likesCount = skillFavoriteCounts[skill.id] ?? skill?.favoriteCount ?? 0;
 
   const handleCopy = async (e, command, key) => {
     e.stopPropagation();
@@ -65,7 +51,12 @@ export default function SkillCard({ skill, hideStats = false }) {
       navigate("/login");
       return;
     }
-    toggleFavorite(skill.id);
+
+    if (onToggleFavorite) {
+      onToggleFavorite(skill);
+      return;
+    }
+    toggleSkillFavorite(skill.id);
   };
 
   const handleCardClick = () => {
@@ -79,54 +70,26 @@ export default function SkillCard({ skill, hideStats = false }) {
 
   const categoryName = skill?.categoryName || skill?.category || "小工具";
   const categoryStyle = getTagStyles(categoryName);
-  const CategoryIcon = CATEGORY_ICONS[categoryName] || PocketKnife;
+  const CategoryIcon = CATEGORY_ICONS[categoryName] || DEFAULT_CATEGORY_ICON;
   const repoLabel =
     skill?.repoOwner && skill?.repoName
       ? `${skill.repoOwner}/${skill.repoName}`
       : null;
 
-  // 安裝機制判斷邏輯比照 FRONTEND_API_SPEC.md 第 9 節：兩個 agent 的安裝機制完全獨立、
-  // 各自最多一種、不並存——Claude Code 一律走 Claude Plugin（兩行指令），Codex 一律走
-  // npx（一行指令），兩者不會混在一起。gitCloneMethod 為 true 時兩者皆不提供，改用
-  // git clone 保底，此時 claudeInstallMethod／codexInstallMethod 一定都是 false。
-  const gitCloneOnly = Boolean(skill?.gitCloneMethod);
-
-  const claudeCommand =
-    !gitCloneOnly && skill?.claudeInstallMethod && repoLabel
-      ? [
-          `claude plugin marketplace add ${repoLabel}`,
-          `claude plugin install ${skill?.claudePluginName || ""}@${skill?.claudeMarketplaceName || ""}`,
-        ].join("\n")
-      : "";
-
-  const codexCommand =
-    !gitCloneOnly && skill?.codexInstallMethod && repoLabel
-      ? `npx skills add ${repoLabel} --skill ${skill?.skillSlug || skill?.name || ""} -a codex`
-      : "";
-
-  const gitCloneCommand =
-    gitCloneOnly && repoLabel
-      ? `git clone https://github.com/${repoLabel}.git`
-      : "";
-
-  // 任一安裝方式不滿足就不顯示該行，卡片下方最多同時顯示 Claude／Codex 兩行，
-  // 或 gitCloneMethod 為 true 時只顯示保底的 git clone 一行。
-  const installRows = gitCloneCommand
-    ? [{ key: "git-clone", label: "Git Clone", command: gitCloneCommand }]
-    : [
-        claudeCommand && {
-          key: "claude",
-          label: "Claude",
-          command: claudeCommand,
-        },
-        codexCommand && { key: "codex", label: "Codex", command: codexCommand },
-      ].filter(Boolean);
+  const {
+    installRows,
+    installShape,
+    isGitClone,
+    selectedRow,
+    availableAgents,
+  } = getInstallDisplay(skill, selectedAgent);
+  const availableAgentOptions = getAvailableAgentOptions(availableAgents);
 
   return (
     <div
       onClick={handleCardClick}
       data-pencil-name={skill?.name || "skill-card"}
-      className="box-border flex-1 h-fit flex flex-col gap-4 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className="box-border flex-1 min-w-0 h-fit flex flex-col gap-4 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
     >
       <div
         data-pencil-name="Title Block"
@@ -203,68 +166,101 @@ export default function SkillCard({ skill, hideStats = false }) {
         </div>
       </div>
 
-      {/* 安裝指令 + 複製按鍵：Claude／Codex 各自安裝機制不同，各佔一行，任一方不滿足就不顯示 */}
       <div className="box-border w-full flex flex-col gap-3">
         {installRows.length > 0 ? (
-          installRows.map((row) => (
-            <div
-              key={row.key}
-              className="box-border w-full flex flex-col gap-1"
-            >
-              <div
-                data-pencil-name={`Install Method Badge ${row.label}`}
-                className={`text-[13px]/[normal] w-fit shrink-0 flex align-middle border rounded-[4px] p-1 ${
-                  INSTALL_ROW_BADGE_STYLES[row.key] ||
-                  "text-[#7DCEA0] border-[#1A3A2A]"
-                }`}
+          <div className="box-border w-full flex flex-col gap-1.5">
+            {installShape && (
+              <span
+                data-pencil-name="Install Shape Badge"
+                className="w-fit text-[10px]/[normal] shrink-0 text-[#7DCEA0] border border-[#1A3A2A] rounded px-1"
               >
-                {openaiIcon && row.key === "codex" && (
-                  <img
-                    src={openaiIcon}
-                    alt="OpenAI Icon"
-                    className="w-4 h-4 inline-block mr-1 brightness-0 invert"
-                  />
-                )}
-                {claudeIcon && row.key === "claude" && (
-                  <img
-                    src={claudeIcon}
-                    alt="Claude Icon"
-                    className="w-4 h-4 inline-block mr-1"
-                  />
-                )}
-                {gitCloneIcon && row.key === "git-clone" && (
-                  <img
-                    src={gitCloneIcon}
-                    alt="Git Clone Icon"
-                    className="w-4 h-4 inline-block mr-1 brightness-0 invert"
-                  />
-                )}
-                <span>{row.label}</span>
+                {installShape === "single-kit" ? "Single kit" : "Full package"}
+              </span>
+            )}
+
+            {availableAgentOptions.length > 0 && (
+              <div
+                data-pencil-name="Agent Picker"
+                className="flex flex-wrap gap-1.5"
+              >
+                {availableAgentOptions.map((option) => {
+                  const isSelected = option.agent === selectedAgent;
+                  return (
+                    <button
+                      key={option.agent}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedAgent(option.agent);
+                      }}
+                      aria-pressed={isSelected}
+                      data-pencil-name={`Agent Option ${option.label}`}
+                      className={`text-[12px]/[normal] flex items-center gap-1 py-1 px-2 rounded-[4px] border cursor-pointer transition-colors ${
+                        isSelected
+                          ? "bg-[#39FF14]/15 border-[#39FF14] text-[#39FF14]"
+                          : "bg-transparent border-[#1A3A2A] text-[#7DCEA0] hover:border-[#39FF14]/40"
+                      }`}
+                    >
+                      <img
+                        src={option.icon}
+                        alt={option.alt}
+                        className={`w-3.5 h-3.5 inline-block ${
+                          option.invert ? "brightness-0 invert" : ""
+                        }`}
+                      />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="box-border w-full flex justify-between items-center gap-2">
+            )}
+
+            {isGitClone && (
+              <div
+                data-pencil-name="Install Method Badge Git Clone"
+                className="text-[13px]/[normal] w-fit shrink-0 flex items-center gap-1 border border-[#FFFFFF] rounded-[4px] p-1 text-[#FFFFFF]"
+              >
+                <img
+                  src={gitCloneIcon}
+                  alt="Git Clone Icon"
+                  className="w-4 h-4 inline-block brightness-0 invert"
+                />
+                <span>Git Clone</span>
+              </div>
+            )}
+
+            {selectedRow ? (
+              <>
                 <div
-                  data-pencil-name={`Install Command ${row.label}`}
+                  data-pencil-name={`Install Command ${selectedRow.label}`}
                   className="text-[13px]/[18px] box-border text-[#d4d9d6] font-mono text-left whitespace-pre-wrap wrap-break-word bg-[rgba(21,70,12,0.7)] rounded-[4px] w-full px-2 py-2 hover:text-[#ffffff]"
                 >
-                  {row.command}
+                  {selectedRow.command}
                 </div>
-
-                <button
-                  type="button"
-                  onClick={(e) => handleCopy(e, row.command, row.key)}
-                  data-pencil-name={`Copy Pill ${row.label}`}
-                  className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
-                >
-                  <div
-                    data-pencil-name={`Copy Label ${row.label}`}
-                    className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
+                <div className="box-border w-full flex justify-end items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) =>
+                      handleCopy(e, selectedRow.command, selectedRow.key)
+                    }
+                    data-pencil-name={`Copy Pill ${selectedRow.label}`}
+                    className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.25 px-2.5 justify-start items-start bg-[#0F1F18] hover:bg-[#39FF14]/15 active:scale-95 transition-all border border-[#00FFFF] rounded-[999px] cursor-pointer font-normal hover:font-semibold"
                   >
-                    {copiedKey === row.key ? "已複製" : "複製"}
-                  </div>
-                </button>
+                    <div
+                      data-pencil-name={`Copy Label ${selectedRow.label}`}
+                      className="text-[14px]/[normal] box-border text-[#00FFFF] text-left whitespace-nowrap"
+                    >
+                      {copiedKey === selectedRow.key ? "已複製" : "複製"}
+                    </div>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-[12px]/[normal] box-border text-[#7DCEA0]/70 text-left">
+                此 Skill 不支援目前選擇的 agent。
               </div>
-            </div>
-          ))
+            )}
+          </div>
         ) : (
           <div className="text-[12px]/[normal] box-border text-[#7DCEA0]/70 text-left">
             尚無安裝指令。

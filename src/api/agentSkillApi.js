@@ -1,6 +1,7 @@
 import { apiRequest } from "./apiClient";
 
-function normalizeAgentSkill(item) {
+// 匯出給 favoriteApi／recipeApi 重用：收藏清單、Recipe 內容回傳的 Skill 物件
+export function normalizeAgentSkill(item) {
   if (typeof item?.id !== "string" || !item.id) return null;
 
   return {
@@ -24,30 +25,24 @@ function normalizeAgentSkill(item) {
     isActive: item.isActive ?? true,
     createdAt: item.createdAt || null,
     updatedAt: item.updatedAt || null,
-    // 08 號票（GitHub metadata 同步）補上這幾個欄位前，一律視為未同步（excerptSource='none'），
-    // 前台需 fallback 顯示 intro，不得顯示空白區塊。
     repoDescription: item.repoDescription || "",
     repoOwnerAvatarUrl: item.repoOwnerAvatarUrl || "",
     readmeExcerpt: item.readmeExcerpt || "",
     excerptSource: item.excerptSource || "none",
-    // repo 的 README.md（優先）或 SKILL.md raw 文字網址，前端直接 fetch 渲染，無此欄位時 fallback 顯示 intro。
+
     docUrl: item.docUrl || "",
-    // 安裝機制欄位（見 FRONTEND_API_SPEC.md 第 9 節）：gitCloneMethod 為 true 時，
-    // claudeInstallMethod／codexInstallMethod 一定是 false，改用 git clone 保底安裝。
-    claudeInstallMethod: item.claudeInstallMethod ?? false,
-    codexInstallMethod: item.codexInstallMethod ?? false,
-    claudePluginName: item.claudePluginName || "",
-    claudeMarketplaceName: item.claudeMarketplaceName || "",
-    gitCloneMethod: item.gitCloneMethod ?? false,
+
+    installKind: item.installKind,
+    supportedAgents: item.supportedAgents || [],
   };
 }
 
 // 無篩選條件（全部上架中）的列表結果快取，避免列表頁與分類清單各自重複打一次相同的 API。
 let allAgentSkillsPromise = null;
 
-/**
- * 取得上架中的 Agent Skill 列表，支援關鍵字（比對 name/intro）與分類篩選。
- */
+
+// 取得上架中的 Agent Skill 列表，支援關鍵字比對與分類篩選
+
 export async function getAgentSkills({ keyword, categoryId } = {}) {
   const isNoFilter = !keyword && !categoryId;
   if (isNoFilter && allAgentSkillsPromise) {
@@ -82,9 +77,9 @@ export async function getAgentSkills({ keyword, categoryId } = {}) {
   return fetchPromise;
 }
 
-/**
- * 從目前上架中的 Agent Skill 列表萃取不重複分類，供列表頁篩選下拉使用。
- */
+
+// 從目前上架中的 Agent Skill 列表萃取不重複分類，供列表頁篩選下拉使用。
+
 export async function getAgentSkillCategories() {
   const skills = await getAgentSkills();
   return Array.from(
@@ -99,9 +94,23 @@ export async function getAgentSkillCategories() {
   );
 }
 
-/**
- * 取得單一 Agent Skill 完整 metadata。
- */
+// 從目前上架中的 Agent Skill 列表萃取不重複來源 repoOwner（含頭像）
+export async function getAgentSkillRepoOwners() {
+  const skills = await getAgentSkills();
+  return Array.from(
+    new Map(
+      skills
+        .filter((skill) => skill.repoOwner)
+        .map((skill) => [
+          skill.repoOwner,
+          { repoOwner: skill.repoOwner, avatarUrl: skill.creatorAvatarUrl || "" },
+        ])
+    ).values()
+  );
+}
+
+// 取得單一 Agent Skill 完整data
+
 export async function getAgentSkillById(id) {
   const res = await apiRequest(`/agent-skills/${id}`, { method: "GET" });
 

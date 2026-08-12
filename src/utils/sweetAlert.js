@@ -64,4 +64,21 @@ export const alertHelper = {
       cancelButtonText: "取消",
     }).then((result) => result.isConfirmed);
   },
+
+  prompt(title, { inputPlaceholder = "", inputValue = "" } = {}) {
+    return CustomSwal.fire({
+      title,
+      input: "text",
+      inputPlaceholder,
+      inputValue,
+      showCancelButton: true,
+      confirmButtonText: "確定",
+      cancelButtonText: "取消",
+      inputValidator: (value) => {
+        if (!value || !value.trim()) return "請輸入名稱";
+      },
+    }).then((result) =>
+      result.isConfirmed ? result.value.trim() : null
+    );
+  },
 };

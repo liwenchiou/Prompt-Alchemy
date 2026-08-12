@@ -77,15 +77,17 @@ export default function Home() {
             data-pencil-name="Hero Title"
             className="text-[24px]/[28px] sm:text-[36px]/[42px] lg:text-[52px]/[57px] box-border w-full text-[#FFFFFF] font-bold text-left flex md:flex-col"
           >
-            <h3>整理你的</h3>
-            <h3> AI Prompt 與 Skill</h3>
+            <h3>
+              <span className="font-kyo text-[#FFD700]">10秒</span> 安裝
+            </h3>
+            <h3>你的AI Prompt 與 Skill</h3>
           </div>
           <div
             data-pencil-name="Hero Body"
             className="text-[16px]/[24px] lg:text-[18px]/[27px] box-border w-full text-[#7DCEA0] font-normal text-left flex-col"
           >
-            <h5>把常用指令分類、搜尋、收藏，</h5>
-            <h5>下一次不再翻聊天室紀錄。</h5>
+            <h5>一鍵安裝常用指令，</h5>
+            <h5>還能分類、搜尋、收藏。</h5>
           </div>
           <div
             data-pencil-name="Hero Actions"
@@ -385,7 +387,9 @@ export default function Home() {
           centeredSlides={canLoop}
           loop={canLoop}
           pagination={{ clickable: true, dynamicBullets: true }}
-          keyboard={{ enabled: true }}
+          keyboard={{
+            enabled: true,
+          }}
           spaceBetween={24}
           slidesPerView={1}
           breakpoints={{

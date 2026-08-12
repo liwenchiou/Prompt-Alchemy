@@ -1,19 +1,34 @@
 import { storage } from "../utils/storage";
 import { favoritesTable } from "./mocks/mockData";
 import { apiRequest } from "./apiClient.js";
+import { normalizeFavoritedSkill } from "./normalizeFavoritedSkill";
 
-export async function getUserFavoriteAPI() {
-  const res = await apiRequest(`/favorites`, {
+export async function getUserFavoriteAPI(itemType = "prompt") {
+  const res = await apiRequest(`/favorites?itemType=${itemType}`, {
     method: "GET",
   });
   const list = Array.isArray(res?.data) ? res.data : [];
   // console.log("用GET拿/favorites:", list.map((item) => item.id));
   return list.map((item) => item.id);
 }
-export async function toggleFavoriteAPI(skillId) {
-  const res = await apiRequest(`/favorites/${skillId}/toggle`, {
-    method: "POST",
+
+/**
+ * 取得已收藏 Agent Skill 的完整資料（非僅 ID），供「我的收藏 - Skills」頁面使用。
+ * 每筆額外帶 favoriteId——加入/移除 Recipe（recipeApi）要用這個識別碼，不是
+ * Agent Skill 的 id（見 FRONTEND_API_SPEC.md 10 節最上方的提示）。
+ */
+export async function getFavoritedSkillsAPI() {
+  const res = await apiRequest("/favorites?itemType=skill", {
+    method: "GET",
   });
+  const list = Array.isArray(res?.data) ? res.data : [];
+  return list.map(normalizeFavoritedSkill).filter(Boolean);
+}
+export async function toggleFavoriteAPI(skillId, itemType = "prompt") {
+  const res = await apiRequest(
+    `/favorites/${skillId}/toggle?itemType=${itemType}`,
+    { method: "POST" }
+  );
   // console.log("用POST拿/favorites/toggle:", res.data);
   return res.data;
 }
