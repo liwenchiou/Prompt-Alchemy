@@ -4,7 +4,7 @@ import { A11y, Keyboard, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import PromptCard from "../../components/PromptCard/promptCard";
+import PromptCard from "../../components/PromptCard/PromptCard";
 import SkillCard from "../../components/SkillCard/skillCard";
 import { getPublishedPrompts } from "../../api/promptApi";
 import { getAgentSkills } from "../../api/agentSkillApi";
