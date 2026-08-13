@@ -155,7 +155,7 @@ export default function SkillCard({
           data-pencil-name="Card Title"
           className="text-[18px]/[normal] box-border text-[#E0F0E8] font-bold font-mono text-left whitespace-nowrap overflow-hidden text-ellipsis w-full"
         >
-          /{skill?.name || "skill-name"}
+          {skill?.name || "skill-name"}
         </div>
 
         <div

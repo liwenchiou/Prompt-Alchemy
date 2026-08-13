@@ -13,6 +13,8 @@ import AdminParameters from "../pages/admin/AdminParameters";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminSkillsView from "../pages/admin/AdminSkillsView";
 import AdminSkillFormManager from "../pages/admin/AdminSkillFormManager";
+import AdminAgentSkillsView from "../pages/admin/AdminAgentSkillsView";
+import AdminAgentSkillFormManager from "../pages/admin/AdminAgentSkillFormManager";
 import AdminContacts from "../pages/admin/AdminContacts";
 import AdminFaqs from "../pages/admin/AdminFaqs";
 import AdminNotFound from "../pages/NotFoundPage";
@@ -63,6 +65,18 @@ const adminRoutes = {
             {
               path: "skills/:id/edit",
               element: <AdminSkillFormManager />,
+            },
+            {
+              path: "agent-skills",
+              element: <AdminAgentSkillsView />,
+            },
+            {
+              path: "agent-skills/new",
+              element: <AdminAgentSkillFormManager />,
+            },
+            {
+              path: "agent-skills/:id/edit",
+              element: <AdminAgentSkillFormManager />,
             },
           ],
         },

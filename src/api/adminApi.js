@@ -425,6 +425,51 @@ export function setSkillActive(id, isActive) {
   return updateSkill(id, { isActive });
 }
 
+// ---- Agent Skills -----------------------------------------------------------
+
+export async function getAdminAgentSkills(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.keyword) params.append("keyword", filters.keyword);
+  if (filters.categoryId) params.append("categoryId", filters.categoryId);
+  if (filters.active) params.append("active", filters.active);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const result = await apiRequest(`/admin/agent-skills${query}`);
+  return result.data;
+}
+
+export async function getAdminAgentSkillById(id) {
+  const result = await apiRequest(`/admin/agent-skills/${id}`);
+  const s = result.data;
+  return s ? { ...s, is_active: s.isActive ?? s.is_active ?? true } : s;
+}
+
+export async function createAdminAgentSkill(data) {
+  const result = await apiRequest(`/admin/agent-skills`, {
+    method: "POST",
+    body: data,
+  });
+  const s = result.data;
+  return s ? { ...s, is_active: s.isActive ?? s.is_active ?? true } : s;
+}
+
+export async function updateAdminAgentSkill(id, data) {
+  const result = await apiRequest(`/admin/agent-skills/${id}`, {
+    method: "PUT",
+    body: data,
+  });
+  const s = result.data;
+  return s ? { ...s, is_active: s.isActive ?? s.is_active ?? true } : s;
+}
+
+export async function setAdminAgentSkillActive(id, isActive) {
+  const result = await apiRequest(`/admin/agent-skills/${id}/active`, {
+    method: "PATCH",
+    body: { isActive },
+  });
+  return result.data;
+}
+
 // ---- Admin Contacts -----------------------------------------------------------
 
 export async function getAdminContacts(filters = {}) {
