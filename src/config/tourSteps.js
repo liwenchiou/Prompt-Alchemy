@@ -3,8 +3,8 @@
  * Supports dynamic routing via `targetRoute` and `route` properties.
  */
 export const createTourSteps = (
-  promptId = 'prompt-uuid-0001-0000-000000000001',
-  skillId = 'agent-skill-uuid-0001-0000-000000000001'
+  promptId = '00000000-0000-4000-8000-000000000001',
+  skillId = '00000000-0000-4000-8000-000000000002'
 ) => {
   const promptDetailRoute = `/skills/${promptId}`;
   const skillDetailRoute = `/agent-skills/${skillId}`;
