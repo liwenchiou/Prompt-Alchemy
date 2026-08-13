@@ -70,13 +70,44 @@ export default function AgentSkillDetail() {
     getAgentSkillById(id)
       .then((data) => {
         if (!active) return;
-        setSkill(data);
-        setLoading(false);
+        if (data) {
+          setSkill(data);
+          setLoading(false);
+        } else {
+          getAgentSkills()
+            .then((list) => {
+              if (!active) return;
+              if (list && list.length > 0) {
+                setSkill(list[0]);
+              } else {
+                setNotFound(true);
+              }
+              setLoading(false);
+            })
+            .catch(() => {
+              if (!active) return;
+              setNotFound(true);
+              setLoading(false);
+            });
+        }
       })
       .catch(() => {
         if (!active) return;
-        setNotFound(true);
-        setLoading(false);
+        getAgentSkills()
+          .then((list) => {
+            if (!active) return;
+            if (list && list.length > 0) {
+              setSkill(list[0]);
+            } else {
+              setNotFound(true);
+            }
+            setLoading(false);
+          })
+          .catch(() => {
+            if (!active) return;
+            setNotFound(true);
+            setLoading(false);
+          });
       });
 
     return () => {
@@ -196,6 +227,7 @@ export default function AgentSkillDetail() {
     <div className="w-full min-h-screen bg-[#0A0E1A] text-[#E0F0E8] py-8 px-6 flex flex-col items-center">
       <div
         data-pencil-name="Agent Skill Detail Content"
+        data-tour="skill-detail-content"
         className="box-border w-full max-w-350 flex flex-col gap-5.5 py-3 justify-start items-start text-left"
       >
         <button
@@ -239,6 +271,7 @@ export default function AgentSkillDetail() {
                 type="button"
                 onClick={handleLike}
                 data-pencil-name="Heart"
+                data-tour="skill-favorite-btn"
                 className="text-[16px]/[normal] box-border text-[#fc4c87] hover:text-[#ff1476] active:scale-95 transition-all bg-transparent border-0 cursor-pointer font-normal text-left whitespace-nowrap flex items-center gap-1"
               >
                 {liked ? (

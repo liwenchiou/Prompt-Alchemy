@@ -96,6 +96,7 @@ export default function Home() {
             <Link
               to="/skills"
               data-pencil-name="Primary CTA"
+              data-tour="hero-cta"
               className="box-border w-fit shrink-0 h-fit flex gap-0 py-3.5 px-6 justify-center sm:justify-start items-start active:scale-95 transition-all rounded-lg no-underline cursor-pointer bg-[#39FF14] hover:bg-[#32dd10]"
             >
               <div
@@ -367,6 +368,7 @@ export default function Home() {
       {/* Featured Prompts Section */}
       <section
         id="featured-skills"
+        data-tour="featured-prompts"
         className="w-full max-w-350 mt-16 flex flex-col gap-6"
       >
         <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">
@@ -409,6 +411,7 @@ export default function Home() {
       {/* Featured Skills Section */}
       <section
         id="featured-agent-skills"
+        data-tour="featured-agent-skills"
         className="w-full max-w-350 mt-16 flex flex-col gap-6"
       >
         <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">

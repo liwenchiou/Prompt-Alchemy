@@ -55,6 +55,7 @@ export default function FavoriteSkillCard({
         <button
           type="button"
           onClick={() => setDropdownOpen((prev) => !prev)}
+          data-tour="favorite-card-add-recipe"
           className="flex items-center gap-1 text-[12px] text-[#7DCEA0] border border-dashed border-[#3D6B50] rounded-full px-2.5 py-0.5 bg-transparent cursor-pointer hover:border-[#39FF14] hover:text-[#39FF14] transition-colors"
         >
           <Plus size={12} />

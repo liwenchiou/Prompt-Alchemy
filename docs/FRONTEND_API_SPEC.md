@@ -7,14 +7,16 @@
 ## 📋 目錄
 1. [通用規範 (General Specs)](#1-通用規範-general-specs)
 2. [認證與會員模組 (Auth & User Module)](#2-認證與會員模組-auth--user-module)
-3. [前台 Prompt / Skill 模組](#3-前台-prompt--skill-模組)
-4. [前台會員收藏清單模組 (Favorites Module)](#4-前台會員收藏清單模組-favorites-module)
-5. [通用選單與參數模組 (Utility & Parameters)](#5-通用選單與參數模組-utility--parameters)
-6. [後台 Prompt / Skill 管理模組 (Admin Skills)](#6-後台-prompt--skill-管理模組-admin-skills)
-7. [後台分類標籤參數管理模組 (Admin Parameters)](#7-後台分類標籤參數管理模組-admin-parameters)
-8. [後台會員管理模組 (Admin Users)](#8-後台會員管理模組-admin-users)
-9. [前台常見問題模組 (Public FAQs)](#9-前台常見問題模組-public-faqs)
-10. [後台常見問題管理模組 (Admin FAQs)](#10-後台常見問題管理模組-admin-faqs)
+3. [前台 Prompt 提示詞模組](#3-前台-prompt-提示詞模組)
+4. [前台 Agent Skills 技能庫模組](#4-前台-agent-skills-技能庫模組)
+5. [前台會員收藏與 Recipe 情境打包模組](#5-前台會員收藏與-recipe-情境打包模組)
+6. [新手指引與全站導覽模組 (Onboarding Tour Module)](#6-新手指引與全站導覽模組-onboarding-tour-module)
+7. [通用選單、檔案上傳與聯絡模組](#7-通用選單檔案上傳與聯絡模組)
+8. [後台 Prompt / Skill 管理模組 (Admin Skills)](#8-後台-prompt--skill-管理模組-admin-skills)
+9. [後台分類標籤參數管理模組 (Admin Parameters)](#9-後台分類標籤參數管理模組-admin-parameters)
+10. [後台會員管理模組 (Admin Users)](#10-後台會員管理模組-admin-users)
+11. [前台常見問題模組 (Public FAQs)](#11-前台常見問題模組-public-faqs)
+12. [後台常見問題管理模組 (Admin FAQs)](#12-後台常見問題管理模組-admin-faqs)
 
 ---
 
@@ -126,30 +128,12 @@
 
 ---
 
-## 3. 前台 Prompt / Skill 模組
-
-### 範例輸出區塊格式說明 (exampleOutput)
-Prompt 的範例輸出已升級為可動態增減與排序的**區塊陣列 (Block Array)**：
-```json
-[
-  { "type": "text", "data": { "context": "輸出文字內容..." }, "seq": 0 },
-  { "type": "image", "data": { "context": "https://example.com/image.png", "alt": "圖片說明", "caption": "圖說" }, "seq": 1 },
-  { "type": "video", "data": { "context": "https://example.com/demo.mp4", "alt": "影片說明", "caption": "圖說" }, "seq": 2 },
-  { "type": "html", "data": { "context": "https://example.com/demo.html", "alt": "HTML 說明", "caption": "圖說" }, "seq": 3 }
-]
-```
-* `type`: `"text"` | `"image"` | `"video"` | `"html"`
-* `data.context`: 必填。`text` 為純文字；`image` / `video` / `html` 為目標網址。
-* `data.alt` / `data.caption`: 選填，僅 `image` / `video` / `html` 包含。
-* `seq`: 排序序號 (從 0 開始整數)。
+## 3. 前台 Prompt 提示詞模組
 
 ### 3.1 取得上架中的 Prompt 列表
 * **Endpoint**: `GET /prompts`
 * **Auth**: 無需 Token
-* **Query Parameters (可選)**:
-  * `category`: 分類篩選 ID
-  * `tag`: 標籤篩選 ID
-  * `search`: 關鍵字搜尋
+* **Query Parameters (可選)**: `category`, `tag`, `search`
 * **Response (200 OK)**:
   ```json
   {
@@ -159,35 +143,12 @@ Prompt 的範例輸出已升級為可動態增減與排序的**區塊陣列 (Blo
         "id": "prompt-uuid-0001",
         "title": "後端 API 審查",
         "slug": "backend-api-review",
-        "intro": "檢查 Express / Next.js API 的錯誤處理、安全性與回傳結構。",
-        "contentTypeId": "ct-prompt-uuid-0001",
+        "intro": "檢查 Express / Next.js API 的錯誤處理與安全性。",
         "modelType": ["GPT-4", "Claude 3.5 Sonnet"],
         "promptContent": "請你扮演資深後端工程師...",
-        "useCase": "程式碼審查",
-        "exampleInput": "router.post('/login', ...)",
-        "exampleOutput": [
-          {
-            "type": "text",
-            "data": { "context": "建議修改程式碼如下：..." },
-            "seq": 0
-          },
-          {
-            "type": "image",
-            "data": { "context": "https://example.com/result.png", "alt": "架構圖", "caption": "輸出範例圖" },
-            "seq": 1
-          }
-        ],
-        "categoryId": "param-cat-backend",
-        "category": "後端開發",
-        "tags": ["Node.js", "Express", "Security"],
-        "sourceUrl": "https://example.com",
         "copyCount": 15,
         "favoriteCount": 42,
-        "isNew": true,
-        "isHot": true,
-        "isActive": true,
-        "createdAt": "2026-06-25T08:00:00Z",
-        "updatedAt": "2026-06-25T08:00:00Z"
+        "isActive": true
       }
     ]
   }
@@ -205,291 +166,274 @@ Prompt 的範例輸出已升級為可動態增減與排序的**區塊陣列 (Blo
       "title": "後端 API 審查",
       "slug": "backend-api-review",
       "intro": "檢查 Express API 結構",
-      "contentTypeId": "ct-prompt-uuid-0001",
       "modelType": ["GPT-4", "Claude 3.5"],
       "promptContent": "請你扮演資深後端工程師...",
-      "useCase": "程式碼審查",
       "exampleInput": "router.post('/login')",
       "exampleOutput": [
-        {
-          "type": "text",
-          "data": { "context": "詳細說明..." },
-          "seq": 0
-        }
+        { "type": "text", "data": { "context": "詳細說明..." }, "seq": 0 }
       ],
-      "categoryId": "param-cat-backend",
-      "category": "後端開發",
-      "tags": ["Node.js", "Express"],
       "copyCount": 16,
-      "favoriteCount": 43,
-      "isActive": true,
-      "createdAt": "2026-06-25T08:00:00Z"
+      "favoriteCount": 43
     }
   }
   ```
 
-### 3.3 增加 Prompt 複製使用次數
+### 3.3 累加 Prompt 複製次數
 * **Endpoint**: `POST /prompts/:id/copy`
 * **Auth**: 無需 Token
 * **Response (200 OK)**:
   ```json
   {
     "status": "success",
-    "message": "複製次數已累加",
+    "message": "複製次數已累加"
+  }
+  ```
+
+---
+
+## 4. 前台 Agent Skills 技能庫模組
+
+### 4.1 取得上架中的 Agent Skills 列表
+* **Endpoint**: `GET /agent-skills`
+* **Auth**: 無需 Token
+* **Query Parameters (可選)**: `keyword`, `categoryId`
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "agent-skill-uuid-0001",
+        "name": "react-code-reviewer",
+        "description": "自動審查 React 組件程式碼品質",
+        "intro": "專為 React & TypeScript 開發者設計的模組化 Agent 技能",
+        "repoOwner": "prompt-alchemy",
+        "repoName": "react-skills",
+        "skillSlug": "code-reviewer",
+        "creatorName": "Alchemy Dev",
+        "installKind": "full_package",
+        "supportedAgents": ["claude-code", "codex", "cursor"],
+        "stargazersCount": 128,
+        "copyCount": 85,
+        "favoriteCount": 34
+      }
+    ]
+  }
+  ```
+
+### 4.2 取得單一 Agent Skill 詳細內容
+* **Endpoint**: `GET /agent-skills/:id`
+* **Auth**: 無需 Token
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
     "data": {
-      "id": "prompt-uuid-0001",
-      "copyCount": 16
+      "id": "agent-skill-uuid-0001",
+      "name": "react-code-reviewer",
+      "description": "自動審查 React 組件程式碼品質",
+      "repoOwner": "prompt-alchemy",
+      "repoName": "react-skills",
+      "skillSlug": "code-reviewer",
+      "readmeExcerpt": "# React Code Reviewer Skill\n...",
+      "docUrl": "https://github.com/prompt-alchemy/react-skills",
+      "installKind": "full_package",
+      "supportedAgents": ["claude-code", "codex", "cursor"]
     }
   }
   ```
 
 ---
 
-## 4. 前台會員收藏清單模組 (Favorites Module)
+## 5. 前台會員收藏與 Recipe 情境打包模組
 
-### 4.1 取得會員的收藏清單 ID 列表
-* **Endpoint**: `GET /favorites`
+### 5.1 取得會員的收藏 ID 清單
+* **Endpoint**: `GET /favorites?itemType=prompt` 或 `GET /favorites?itemType=skill`
 * **Auth**: `Authorization: Bearer <token>`
 * **Response (200 OK)**:
   ```json
   {
     "status": "success",
-    "data": [
-      "prompt-uuid-0001-0000-000000000001",
-      "prompt-uuid-0001-0000-000000000002"
-    ]
-  }
-  ```
-
-### 4.2 切換 / 更新收藏狀態
-* **Endpoint**: `POST /favorites/toggle`
-* **Auth**: `Authorization: Bearer <token>`
-* **Request Body**:
-  ```json
-  {
-    "promptId": "prompt-uuid-0001-0000-000000000001"
-  }
-  ```
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "message": "收藏清單更新成功",
     "data": [
       "prompt-uuid-0001-0000-000000000001"
     ]
   }
   ```
 
----
-
-## 5. 通用選單與參數模組 (Utility & Parameters)
-
-### 5.1 取得分類選單列表
-* **Endpoint**: `GET /utility/categories`
-* **Auth**: 無需 Token
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "data": [
-      { "id": "cat-1", "name": "程式開發 / 開發輔助", "slug": "dev" },
-      { "id": "cat-2", "name": "文案創作 / 行銷", "slug": "marketing" },
-      { "id": "cat-3", "name": "設計 / UX", "slug": "design" }
-    ]
-  }
-  ```
-
-### 5.2 取得標籤清單
-* **Endpoint**: `GET /utility/tags`
-* **Auth**: 無需 Token
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "data": [
-      { "id": "tag-1", "name": "React" },
-      { "id": "tag-2", "name": "Node.js" },
-      { "id": "tag-3", "name": "Prompt 工程" }
-    ]
-  }
-  ```
-
----
-
-## 6. 後台 Prompt / Skill 管理模組 (Admin Skills)
-
-> **注意 (狀態說明)**：後台狀態已簡化為布林值 `isActive` (啟用 / 未啟用)，相容舊資料欄位 `is_active`。已移除原有的 `status` 欄位 ("draft" / "published" / "archived")。
-
-### 6.1 取得後台 Prompt 列表
-* **Endpoint**: `GET /admin/skills`
-* **Auth**: `Authorization: Bearer <admin_token>`
-* **Query Parameters (可選)**:
-  * `keyword`: 關鍵字搜尋
-  * `contentTypeId`: 資料類型 ID
-  * `categoryId`: 分類 ID
-  * `active`: `active` (僅看啟用) | `inactive` (僅看未啟用)
+### 5.2 取得已收藏 Agent Skill 的完整資料 (含 `favoriteId`)
+* **Endpoint**: `GET /favorites?itemType=skill`
+* **Auth**: `Authorization: Bearer <token>`
 * **Response (200 OK)**:
   ```json
   {
     "status": "success",
     "data": [
       {
-        "id": "prompt-uuid-0001",
-        "title": "後端 API 審查",
-        "intro": "簡介說明",
-        "contentTypeId": "ct-1",
-        "categoryId": "cat-1",
-        "tags": ["tag-1"],
-        "exampleOutput": [
-          {
-            "type": "text",
-            "data": { "context": "範例輸出文字" },
-            "seq": 0
-          }
-        ],
-        "isActive": true,
-        "copyCount": 15,
-        "favoriteCount": 42,
-        "createdAt": "2026-06-25T08:00:00Z",
-        "updatedAt": "2026-06-25T08:00:00Z"
+        "favoriteId": "fav-skill-uuid-0001",
+        "id": "agent-skill-uuid-0001",
+        "name": "react-code-reviewer",
+        "repoOwner": "prompt-alchemy",
+        "repoName": "react-skills",
+        "installKind": "full_package",
+        "supportedAgents": ["claude-code", "codex", "cursor"]
       }
     ]
   }
   ```
 
-### 6.2 新增 Prompt
-* **Endpoint**: `POST /admin/skills`
-* **Auth**: `Authorization: Bearer <admin_token>`
+### 5.3 切換 Prompt 或 Skill 收藏狀態
+* **Endpoint**: `POST /favorites/:id/toggle?itemType=prompt` 或 `POST /favorites/:id/toggle?itemType=skill`
+* **Auth**: `Authorization: Bearer <token>`
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": { "favorited": true }
+  }
+  ```
+
+### 5.4 取得會員 Recipe 配方清單
+* **Endpoint**: `GET /me/recipes`
+* **Auth**: `Authorization: Bearer <token>`
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      { "id": "recipe-uuid-0001", "name": "Frontend Essentials", "createdAt": "2026-08-01T10:00:00Z" }
+    ]
+  }
+  ```
+
+### 5.5 建立 Recipe
+* **Endpoint**: `POST /me/recipes`
+* **Auth**: `Authorization: Bearer <token>`
+* **Request Body**: `{ "name": "Backend Toolkit" }`
+
+### 5.6 取得 Recipe 與 Skill 綁定關係
+* **Endpoint**: `GET /me/recipe-items`
+* **Auth**: `Authorization: Bearer <token>`
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      { "recipe_id": "recipe-uuid-0001", "favorite_id": "fav-skill-uuid-0001" }
+    ]
+  }
+  ```
+
+### 5.7 新增 / 移除 Recipe 項目
+* **新增項目**: `POST /me/recipes/:recipeId/items` (`{ "favoriteId": "fav-skill-uuid-0001" }`)
+* **移除項目**: `DELETE /me/recipes/:recipeId/items/:favoriteId`
+
+---
+
+## 6. 新手指引與全站導覽模組 (Onboarding Tour Module)
+
+前端全站提供 13 個跨頁步驟的**互動式導覽教學 (Driver.js)**，輔助新註冊/登入會員快速熟悉 Prompt 與 Agent Skill 的搜尋、收藏、Recipe 打包與批量安裝 (Bulk Install) 功能。
+
+### 6.1 本地狀態與觸發條件規範
+* **觸發條件**：僅限**已登入會員**且 `localStorage.getItem('prompt_alchemy_onboarding_v1')` 不存在時，系統延遲 600ms 自動彈出 Welcome Modal。
+* **LocalStorage 金鑰規範**：
+  * `STORAGE_KEY`: `'prompt_alchemy_onboarding_v1'` — `'true'` 代表已完成或關閉過導覽。
+  * `ACTIVE_STEP_KEY`: `'prompt_alchemy_tour_active_step'` — 紀錄跨頁跳轉時目前導覽步驟索引 (`0` ~ `12`)。
+* **導覽完成與關閉處理**：
+  * 當使用者點擊「**完成導覽 🎉**」、點擊關閉按鈕或完成 Step 13 時，系統自動清除 `ACTIVE_STEP_KEY` 並將 `STORAGE_KEY` 設為 `'true'`。
+  * **自動導回首頁**：若導覽結束時畫面不在首頁 (`/`)，系統會自動呼叫 `navigate('/')` 將使用者順暢平滑引導回首頁。
+
+### 6.2 13 步跨頁導覽步驟地圖
+
+| 步驟 (1-based) | 目標 DOM Selector (`data-tour`) | 所屬頁面 Route | 說明與跨頁邏輯 |
+| :--- | :--- | :--- | :--- |
+| **Step 1** | `[data-tour="navbar-brand"]` | `/` | 歡迎介紹與品牌 Logo 回首頁說明 |
+| **Step 2** | `[data-tour="nav-links"]` | `/` | 頂部導覽列功能說明 |
+| **Step 3** | `[data-tour="hero-cta"]` | `/` | Hero 區極速安裝與探索入口 |
+| **Step 4** | `[data-tour="featured-prompts"]` | `/` | 熱門 Prompt 展示；下一步自動跳轉至 Prompt 詳情頁 |
+| **Step 5** | `[data-tour="prompt-detail-content"]` | `/skills/:id` | Prompt 內容說明與模板示範 |
+| **Step 6** | `[data-tour="prompt-favorite-btn"]` | `/skills/:id` | Prompt 收藏按鈕；下一步自動跳轉至 Agent Skill 詳情頁 |
+| **Step 7** | `[data-tour="skill-detail-content"]` | `/agent-skills/:id` | Agent Skill 詳情與 CLI 安裝指令說明 |
+| **Step 8** | `[data-tour="skill-favorite-btn"]` | `/agent-skills/:id` | Skill 收藏按鈕；下一步自動跳轉至「我的收藏-Skills」頁 |
+| **Step 9** | `[data-tour="favorites-recipe-tabs"]` | `/favorites/skills` | Recipe 頁籤與情境打包說明 |
+| **Step 10**| `[data-tour="favorite-card-add-recipe"]` | `/favorites/skills` | 卡片上的「加入 Recipe」按鈕說明 |
+| **Step 11**| `[data-tour="bulk-install-btn"]` | `/favorites/skills` | 一鍵安裝 (Bulk Install) 面板展開按鈕 |
+| **Step 12**| `[data-tour="bulk-install-copy-btn"]` | `/favorites/skills` | 批量安裝指令「複製全部」按鈕（自動開展面板並精準高亮） |
+| **Step 13**| `[data-tour="tour-replay-btn"]` | `/favorites/skills` | Navbar 「新手指引」重播按鈕；完成後**自動跳轉回首頁 (`/`)** |
+
+---
+
+## 7. 通用選單、檔案上傳與聯絡模組
+
+### 7.1 分類與標籤選單
+* **GET /utility/categories**: 取得全站 Prompt/Skill 分類清單
+* **GET /utility/tags**: 取得熱門標籤清單
+
+### 7.2 檔案與圖片上傳
+* **Endpoint**: `POST /upload`
+* **Auth**: `Authorization: Bearer <token>`
+* **Request (multipart/form-data)**:
+  * `file`: 圖片、影片或示範檔案
+* **Response (200 OK)**:
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "url": "https://api.promptalchemy.com/uploads/demo-image-001.png"
+    }
+  }
+  ```
+
+### 7.3 送出聯絡我們 / 意見回饋
+* **Endpoint**: `POST /contact`
+* **Auth**: 無需 Token
 * **Request Body**:
   ```json
   {
-    "title": "新 Prompt 標題",
-    "slug": "new-prompt-slug",
-    "intro": "簡介說明",
-    "contentTypeId": "ct-1",
-    "categoryId": "cat-1",
-    "modelType": ["model-1"],
-    "tags": ["tag-1", "tag-2"],
-    "promptContent": "Prompt 詳細內容...",
-    "useCase": "使用場景說明",
-    "exampleInput": "範例輸入",
-    "exampleOutput": [
-      {
-        "type": "text",
-        "data": { "context": "範例輸出文字" },
-        "seq": 0
-      },
-      {
-        "type": "image",
-        "data": {
-          "context": "https://example.com/demo.png",
-          "alt": "示意圖",
-          "caption": "範例圖說"
-        },
-        "seq": 1
-      }
-    ],
-    "isActive": true
+    "name": "訪客姓名",
+    "email": "visitor@example.com",
+    "subject": "功能建議",
+    "message": "希望能支援更多 AI Agent 框架..."
   }
   ```
-* **Response (201 Created)**
-
-### 6.3 修改 Prompt
-* **Endpoint**: `PUT /admin/skills/:id`
-* **Auth**: `Authorization: Bearer <admin_token>`
-* **Request Body**: (同新增欄位，支援部分或完整更新)
-
-### 6.4 切換 Prompt 啟用/停用狀態
-* **Endpoint**: `PATCH /admin/skills/:id/active`
-* **Auth**: `Authorization: Bearer <admin_token>`
-* **Request Body**:
-  ```json
-  {
-    "isActive": false
-  }
-  ```
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "message": "Prompt 狀態已更新"
-  }
-  ```
-
-### 6.5 刪除 Prompt
-* **Endpoint**: `DELETE /admin/skills/:id`
-* **Auth**: `Authorization: Bearer <admin_token>`
+* **Response (200 OK)**: `{ "status": "success", "message": "意見已成功送出" }`
 
 ---
 
-## 7. 後台分類標籤參數管理模組 (Admin Parameters)
+## 8. 後台 Prompt / Skill 管理模組 (Admin Skills)
 
-### 7.1 取得所有參數列表 (分類/標籤/模型)
-* **Endpoint**: `GET /admin/parameters`
-* **Auth**: `Authorization: Bearer <admin_token>`
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "data": [
-      {
-        "id": "param-1",
-        "name": "程式開發",
-        "type": "category", // "category" | "tag" | "model" | "content_type" | "role"
-        "slug": "dev",
-        "sortOrder": 1,
-        "isActive": true
-      }
-    ]
-  }
-  ```
+> **狀態說明**：狀態使用布林值 `isActive` (啟用 / 停用)。
 
-### 7.2 新增 / 修改 / 刪除參數
-* **新增**: `POST /admin/parameters` (`{ "name": "新分類", "type": "category", "description": "", "isActive": true }`)
-* **修改**: `PUT /admin/parameters/:id` (`{ "name": "新名稱", "description": "說明", "isActive": true }`)
-* **切換狀態**: `PATCH /admin/parameters/:id/active` (`{ "isActive": true }`)
-* **刪除**: `DELETE /admin/parameters/:id`
+* **取得清單**: `GET /admin/skills?keyword=&categoryId=&active=`
+* **新增 Skill**: `POST /admin/skills`
+* **修改 Skill**: `PUT /admin/skills/:id`
+* **切換狀態**: `PATCH /admin/skills/:id/active` (`{ "isActive": true }`)
+* **刪除 Skill**: `DELETE /admin/skills/:id`
 
 ---
 
-## 8. 後台會員管理模組 (Admin Users)
+## 9. 後台分類標籤參數管理模組 (Admin Parameters)
 
-### 8.1 取得會員清單 (管理員)
-* **Endpoint**: `GET /admin/users`
-* **Auth**: `Authorization: Bearer <admin_token>`
-* **Query Parameters (可選)**: `search`, `role`, `isActive`
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "data": [
-      {
-        "id": "user-1",
-        "name": "張小明",
-        "email": "user@example.com",
-        "role": "member", // "member" | "admin"
-        "isActive": true,
-        "createdAt": "2026-06-01T08:00:00Z"
-      }
-    ]
-  }
-  ```
+* **取得參數**: `GET /admin/parameters`
+* **新增參數**: `POST /admin/parameters` (`{ "name": "新分類", "type": "category" }`)
+* **修改參數**: `PUT /admin/parameters/:id`
+* **切換狀態**: `PATCH /admin/parameters/:id/active`
+* **刪除參數**: `DELETE /admin/parameters/:id`
 
-### 8.2 新增 / 修改 / 停用會員
+---
+
+## 10. 後台會員管理模組 (Admin Users)
+
+* **取得會員列表**: `GET /admin/users`
 * **新增會員**: `POST /admin/users`
-* **修改會員資料**: `PUT /admin/users/:id` (修改 name, role, email, isActive)
-* **切換啟用狀態**: `PATCH /admin/users/:id/active` (`{ "isActive": false }`)
+* **修改會員**: `PUT /admin/users/:id`
+* **切換狀態**: `PATCH /admin/users/:id/active`
 * **刪除會員**: `DELETE /admin/users/:id`
 
 ---
 
-## 9. 前台常見問題模組 (Public FAQs)
+## 11. 前台常見問題模組 (Public FAQs)
 
-### 9.1 取得已啟用的 FAQ
 * **Endpoint**: `GET /faqs/`
-* **Auth**: 無需 Token
-* **排序**: `sortOrder ASC`，再依 `createdAt ASC`、`id ASC` 保持穩定順序。
 * **Response (200 OK)**:
   ```json
   {
@@ -504,89 +448,12 @@ Prompt 的範例輸出已升級為可動態增減與排序的**區塊陣列 (Blo
   }
   ```
 
-前台只會收到 `id`、`question`、`answer`。`sortOrder`、`isActive` 與時間欄位不會出現在公開 response；沒有啟用資料時回傳空陣列。
-
 ---
 
-## 10. 後台常見問題管理模組 (Admin FAQs)
+## 12. 後台常見問題管理模組 (Admin FAQs)
 
-所有 Admin FAQ API 均需 `Authorization: Bearer <admin_token>`，且 JWT role 必須為 `admin`。
-
-### 10.1 取得 FAQ 管理清單
-* **Endpoint**: `GET /admin/faqs/`
-* **Auth**: Admin Token
-* **Query Parameters**: 無；目前沒有 server-side pagination 或 filter。
-* **排序**: 啟用資料優先，再依 `sortOrder ASC`、`createdAt ASC`、`id ASC`。
-* **Response (200 OK)**:
-  ```json
-  {
-    "status": "success",
-    "data": [
-      {
-        "id": "60000000-0000-4000-a000-000000000001",
-        "question": "Prompt 鍊金坊是什麼？",
-        "answer": "Prompt 鍊金坊是一個整理與分享 AI Prompt、Skill 的收藏平台。",
-        "sortOrder": 1,
-        "isActive": true,
-        "createdAt": "2026-08-03T12:57:01.510Z",
-        "updatedAt": "2026-08-03T15:17:07.979Z"
-      }
-    ]
-  }
-  ```
-
-### 10.2 取得單筆 FAQ
-* **Endpoint**: `GET /admin/faqs/:id`
-* **Auth**: Admin Token
-* **說明**: 可取得啟用或未啟用資料；不存在回傳 `404`，UUID 格式錯誤回傳 `400`。
-
-### 10.3 建立 FAQ
-* **Endpoint**: `POST /admin/faqs/`
-* **Auth**: Admin Token
-* **Request Body**:
-  ```json
-  {
-    "question": "如何使用 Prompt 鍊金坊？",
-    "answer": "瀏覽並複製想使用的 Prompt。",
-    "sortOrder": 0,
-    "isActive": true
-  }
-  ```
-* `question`、`answer` 必填，必須是 trim 後非空白字串。
-* `sortOrder` 可省略，預設 `0`；必須是大於或等於 `0` 的整數，不接受數字字串、小數或負數。
-* `isActive` 可省略，預設 `true`；必須是 JSON boolean。
-* **Response**: `201 Created`，`data` 為完整 Admin FAQ model。
-
-### 10.4 更新 FAQ
-* **Endpoint**: `PUT /admin/faqs/:id`
-* **Auth**: Admin Token
-* **說明**: 雖使用 `PUT`，實作支援部分更新；可更新 `question`、`answer`、`sortOrder`、`isActive`。
-* **Request Body 範例**:
-  ```json
-  {
-    "sortOrder": 3,
-    "isActive": false
-  }
-  ```
-* 空物件或只有未知欄位會回傳 `400`：`沒有可更新的 FAQ 欄位`。
-* 成功後會更新 `updatedAt`。
-
-### 10.5 下架 FAQ（軟刪除）
-* **Endpoint**: `DELETE /admin/faqs/:id`
-* **Auth**: Admin Token
-* **說明**: 不會刪除資料列，而是將 `isActive` 設為 `false`。下架後公開 `GET /faqs/` 不再回傳該筆，但後台 list/detail 仍可取得。
-* **恢復發布**: 呼叫 `PUT /admin/faqs/:id`：
-  ```json
-  {
-    "isActive": true
-  }
-  ```
-
-### 10.6 錯誤與功能限制
-* `400`: 欄位格式、空白必填值、負數／小數排序、空 update 或 UUID 格式錯誤。
-* `401`: 未登入或 Token 無效／過期。
-* `403`: JWT role 不是 admin。
-* `404`: 找不到指定 FAQ。
-* `500` / Network Error: 伺服器或連線異常，前端應提供重新載入或重試。
-* 目前沒有 `PATCH`、bulk reorder、永久刪除、重複問題限制、server-side 搜尋或 pagination。
-* 公開 `src/api/faqApi.js` 只處理三欄 public model；Admin FAQ CRUD 應使用 `src/api/adminApi.js` 的完整 model。
+* **取得 FAQ 管理清單**: `GET /admin/faqs/`
+* **取得單筆 FAQ**: `GET /admin/faqs/:id`
+* **建立 FAQ**: `POST /admin/faqs/`
+* **更新 FAQ**: `PUT /admin/faqs/:id`
+* **下架 FAQ (軟刪除)**: `DELETE /admin/faqs/:id`

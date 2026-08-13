@@ -1,4 +1,5 @@
 import { apiRequest } from "./apiClient";
+import { agentSkillsTable } from "./mocks/mockData";
 
 // 匯出給 favoriteApi／recipeApi 重用：收藏清單、Recipe 內容回傳的 Skill 物件
 export function normalizeAgentSkill(item) {
@@ -9,40 +10,60 @@ export function normalizeAgentSkill(item) {
     name: item.name || "",
     description: item.description || "",
     intro: item.intro || "",
-    repoOwner: item.repoOwner || "",
-    repoName: item.repoName || "",
-    skillSlug: item.skillSlug || "",
-    creatorName: item.creatorName || "",
-    creatorAvatarUrl: item.creatorAvatarUrl || "",
-    creatorProfileUrl: item.creatorProfileUrl || "",
+    repoOwner: item.repoOwner || item.repo_owner || "",
+    repoName: item.repoName || item.repo_name || "",
+    skillSlug: item.skillSlug || item.skill_slug || "",
+    creatorName: item.creatorName || item.creator_name || "",
+    creatorAvatarUrl: item.creatorAvatarUrl || item.creator_avatar_url || "",
+    creatorProfileUrl: item.creatorProfileUrl || item.creator_profile_url || "",
     license: item.license || "",
-    categoryId: item.categoryId || "",
-    categoryName: item.category || "",
-    stargazersCount: item.stargazersCount || 0,
-    copyCount: item.copyCount || 0,
-    favoriteCount: item.favoriteCount || 0,
-    isHot: item.isHot ?? false,
-    isActive: item.isActive ?? true,
-    createdAt: item.createdAt || null,
-    updatedAt: item.updatedAt || null,
-    repoDescription: item.repoDescription || "",
-    repoOwnerAvatarUrl: item.repoOwnerAvatarUrl || "",
-    readmeExcerpt: item.readmeExcerpt || "",
-    excerptSource: item.excerptSource || "none",
+    categoryId: item.categoryId || item.category_id || "",
+    categoryName: item.category || item.categoryName || "",
+    stargazersCount: item.stargazersCount ?? item.stargazers_count ?? 0,
+    copyCount: item.copyCount ?? item.copy_count ?? 0,
+    favoriteCount: item.favoriteCount ?? item.favorite_count ?? 0,
+    isHot: item.isHot ?? item.is_hot ?? false,
+    isActive: item.isActive ?? item.is_active ?? true,
+    createdAt: item.createdAt || item.created_at || null,
+    updatedAt: item.updatedAt || item.updated_at || null,
+    repoDescription: item.repoDescription || item.repo_description || "",
+    repoOwnerAvatarUrl: item.repoOwnerAvatarUrl || item.repo_owner_avatar_url || "",
+    readmeExcerpt: item.readmeExcerpt || item.readme_excerpt || "",
+    excerptSource: item.excerptSource || item.excerpt_source || "none",
 
-    docUrl: item.docUrl || "",
+    docUrl: item.docUrl || item.doc_url || "",
 
-    installKind: item.installKind,
-    supportedAgents: item.supportedAgents || [],
+    installKind: item.installKind || item.install_kind,
+    supportedAgents: item.supportedAgents || item.supported_agents || [],
   };
+}
+
+function getFallbackAgentSkills({ keyword, categoryId } = {}) {
+  let list = agentSkillsTable
+    .map((item) => normalizeAgentSkill(item))
+    .filter(Boolean);
+
+  if (keyword) {
+    const k = keyword.toLowerCase();
+    list = list.filter(
+      (s) =>
+        s.name.toLowerCase().includes(k) || s.intro.toLowerCase().includes(k)
+    );
+  }
+  if (categoryId) {
+    list = list.filter((s) => s.categoryId === categoryId);
+  }
+  return list;
 }
 
 // 無篩選條件（全部上架中）的列表結果快取，避免列表頁與分類清單各自重複打一次相同的 API。
 let allAgentSkillsPromise = null;
 
+export function clearAgentSkillsCache() {
+  allAgentSkillsPromise = null;
+}
 
 // 取得上架中的 Agent Skill 列表，支援關鍵字比對與分類篩選
-
 export async function getAgentSkills({ keyword, categoryId } = {}) {
   const isNoFilter = !keyword && !categoryId;
   if (isNoFilter && allAgentSkillsPromise) {
@@ -55,19 +76,21 @@ export async function getAgentSkills({ keyword, categoryId } = {}) {
   const query = params.toString();
 
   const fetchPromise = (async () => {
-    const res = await apiRequest(`/agent-skills${query ? `?${query}` : ""}`, {
-      method: "GET",
-    });
+    try {
+      const res = await apiRequest(`/agent-skills${query ? `?${query}` : ""}`, {
+        method: "GET",
+      });
 
-    if (res?.status !== "success" || !Array.isArray(res.data)) {
-      throw new Error("Agent Skill 列表回應格式錯誤");
+      if (res?.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data.map(normalizeAgentSkill).filter(Boolean);
+      }
+    } catch (err) {
+      console.warn("Backend /agent-skills API notice, falling back to mock data:", err.message);
     }
-
-    return res.data.map(normalizeAgentSkill).filter(Boolean);
+    return getFallbackAgentSkills({ keyword, categoryId });
   })().catch((err) => {
-    // 失敗時清除快取，避免之後的請求一直重放同一個已失敗的 Promise
     if (isNoFilter) allAgentSkillsPromise = null;
-    throw err;
+    return getFallbackAgentSkills({ keyword, categoryId });
   });
 
   if (isNoFilter) {
@@ -77,9 +100,7 @@ export async function getAgentSkills({ keyword, categoryId } = {}) {
   return fetchPromise;
 }
 
-
 // 從目前上架中的 Agent Skill 列表萃取不重複分類，供列表頁篩選下拉使用。
-
 export async function getAgentSkillCategories() {
   const skills = await getAgentSkills();
   return Array.from(
@@ -110,13 +131,19 @@ export async function getAgentSkillRepoOwners() {
 }
 
 // 取得單一 Agent Skill 完整data
-
 export async function getAgentSkillById(id) {
-  const res = await apiRequest(`/agent-skills/${id}`, { method: "GET" });
+  try {
+    const res = await apiRequest(`/agent-skills/${id}`, { method: "GET" });
 
-  if (res?.status !== "success" || !res.data) {
-    throw new Error("Agent Skill 詳情回應格式錯誤");
+    if (res?.status === "success" && res.data) {
+      return normalizeAgentSkill(res.data);
+    }
+  } catch (err) {
+    console.warn(`Backend /agent-skills/${id} API notice, falling back to mock data:`, err.message);
   }
 
-  return normalizeAgentSkill(res.data);
+  const fallbackList = getFallbackAgentSkills();
+  const match = fallbackList.find((s) => s.id === id) || fallbackList[0];
+  return match || null;
 }
+

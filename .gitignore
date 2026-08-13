@@ -21,6 +21,7 @@ AGENTS.md
 .claude
 .agents
 .scratch
+scratch/
 # .github
 CONTEXT.md
 docs/

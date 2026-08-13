@@ -2,12 +2,20 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { LoadingProvider, useLoading } from "./context/LoadingContext";
+import { OnboardingProvider } from "./context/OnboardingContext";
+import WelcomeModal from "./components/Onboarding/WelcomeModal";
+
+import { useOnboarding } from "./context/OnboardingContext";
 
 function AppContent() {
   const location = useLocation();
   const { setIsLoading } = useLoading();
+  const { isTourActive } = useOnboarding();
 
   useEffect(() => {
+    // 導覽期間不觸發全螢幕 Loading 鍋子動畫，避免阻擋 Driver.js 引導與手動高亮
+    if (isTourActive) return;
+
     // 路由切換時啟動載入動畫
     setIsLoading(true);
 
@@ -18,7 +26,7 @@ function AppContent() {
     }, 800);
 
     return () => clearTimeout(fallback);
-  }, [location.pathname, setIsLoading]);
+  }, [location.pathname, setIsLoading, isTourActive]);
 
   return <Outlet />;
 }
@@ -27,7 +35,10 @@ export default function App() {
   return (
     <LoadingProvider>
       <AuthProvider>
-        <AppContent />
+        <OnboardingProvider>
+          <WelcomeModal />
+          <AppContent />
+        </OnboardingProvider>
       </AuthProvider>
     </LoadingProvider>
   );

@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { ClipboardList, FolderHeart } from "lucide-react";
+import { ClipboardList, FolderHeart, HelpCircle } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
+import { useOnboarding } from "../../context/OnboardingContext";
 
 export default function Navbar() {
   const { user } = useAuth();
+  const { replayTour } = useOnboarding();
 
   return (
     <nav
@@ -13,6 +15,7 @@ export default function Navbar() {
       <Link
         to="/"
         data-pencil-name="Brand"
+        data-tour="navbar-brand"
         className="box-border w-fit shrink-0 h-fit flex flex-row gap-3 justify-start items-center no-underline me-4 sm:me-0"
       >
         <div
@@ -40,6 +43,7 @@ export default function Navbar() {
 
       <div
         data-pencil-name="Nav Links"
+        data-tour="nav-links"
         className="box-border flex-1 min-w-0 h-fit flex flex-row gap-2 sm:gap-3 lg:gap-28 justify-evenly lg:justify-start items-center mx-3 sm:mx-6 lg:flex-none lg:w-fit"
       >
         <Link
@@ -88,8 +92,21 @@ export default function Navbar() {
 
       <div
         data-pencil-name="Nav Actions"
-        className="box-border w-fit shrink-0 h-fit flex flex-row gap-4 justify-start items-center"
+        className="box-border w-fit shrink-0 h-fit flex flex-row gap-3 sm:gap-4 justify-start items-center"
       >
+        {/* 新手指引重播按鈕：僅登入後顯示 */}
+        {user && (
+          <button
+            onClick={replayTour}
+            data-tour="tour-replay-btn"
+            title="重新觀看新手導覽"
+            className="box-border flex items-center gap-1.5 py-2 px-3 text-[14px] text-[#7DCEA0] hover:text-[#39FF14] bg-white/5 hover:bg-[#39FF14]/10 border border-white/10 hover:border-[#39FF14]/40 rounded-lg transition-all cursor-pointer"
+          >
+            <HelpCircle size={17} className="text-[#FFD700]" />
+            <span className="hidden sm:inline font-semibold">新手指引</span>
+          </button>
+        )}
+
         {user ? (
           <>
             <Link

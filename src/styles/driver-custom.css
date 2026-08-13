@@ -1,0 +1,115 @@
+/* Driver.js Custom Styling for Prompt-Alchemy Theme */
+@import "driver.js/dist/driver.css";
+
+.driver-popover {
+  background-color: #0d1222 !important;
+  color: #e0f0e8 !important;
+  border: 1px solid rgba(57, 255, 20, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(57, 255, 20, 0.2) !important;
+  border-radius: 12px !important;
+  padding: 18px 20px !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  max-width: 420px !important;
+}
+
+.driver-popover-title {
+  color: #ffd700 !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.driver-popover-description {
+  color: #b0d8c2 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  margin-bottom: 16px !important;
+}
+
+.driver-popover-footer {
+  margin-top: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.driver-popover-progress-text {
+  color: #7dcea0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.driver-popover-navigation-btns {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.driver-popover-btn {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #e0f0e8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 6px !important;
+  padding: 6px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  text-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.driver-popover-btn:hover {
+  background-color: rgba(57, 255, 20, 0.15) !important;
+  color: #39ff14 !important;
+  border-color: rgba(57, 255, 20, 0.5) !important;
+}
+
+.driver-popover-next-btn {
+  background-color: #39ff14 !important;
+  color: #0a0e1a !important;
+  border-color: #39ff14 !important;
+  font-weight: 700 !important;
+}
+
+.driver-popover-next-btn:hover {
+  background-color: #32dd10 !important;
+  color: #000000 !important;
+  border-color: #32dd10 !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.5) !important;
+}
+
+.driver-popover-close-btn {
+  color: #9ca3af !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: #ffffff !important;
+}
+
+.driver-popover-arrow-side-top {
+  border-top-color: #0d1222 !important;
+}
+
+.driver-popover-arrow-side-bottom {
+  border-bottom-color: #0d1222 !important;
+}
+
+.driver-popover-arrow-side-left {
+  border-left-color: #0d1222 !important;
+}
+
+.driver-popover-arrow-side-right {
+  border-right-color: #0d1222 !important;
+}
+
+/* Spotlight Highlighted Element Backdrop */
+.driver-overlay {
+  background-color: rgba(5, 8, 15, 0.45) !important;
+}
+
+.driver-active-element {
+  box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.8), 0 0 20px rgba(57, 255, 20, 0.4) !important;
+  border-radius: 8px !important;
+}

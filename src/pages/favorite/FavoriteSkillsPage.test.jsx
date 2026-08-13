@@ -10,6 +10,9 @@ import { getMyRecipesAPI, getMyRecipeItemsAPI } from "../../api/recipeApi";
 import { alertHelper } from "../../utils/sweetAlert";
 
 vi.mock("../../hooks/useAuth", () => ({ default: vi.fn() }));
+vi.mock("../../api/agentSkillApi", () => ({
+  getAgentSkills: vi.fn().mockResolvedValue([]),
+}));
 vi.mock("../../api/favoriteApi", () => ({
   getFavoritedSkillsAPI: vi.fn(),
 }));

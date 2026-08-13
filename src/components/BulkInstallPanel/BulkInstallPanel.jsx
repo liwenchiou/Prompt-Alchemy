@@ -187,16 +187,21 @@ export default function BulkInstallPanel({ skills, scopeLabel }) {
         >
           {script || "沒有選取任何指令。"}
         </div>
-        <button
-          type="button"
-          onClick={handleCopy}
-          disabled={!script}
-          className="self-end box-border w-fit shrink-0 h-fit flex gap-0 py-1.5 px-3.5 justify-start items-start bg-[#FFD700] hover:bg-[#FFD700]/85 active:scale-95 transition-all rounded-[999px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
+        <div
+          data-tour="bulk-install-copy-btn"
+          className="self-end box-border w-fit shrink-0 h-fit"
         >
-          <div className="text-[13px]/[normal] box-border text-[#0A0E1A] font-semibold text-left whitespace-nowrap">
-            {copied ? "已複製" : "複製全部"}
-          </div>
-        </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            disabled={!script}
+            className="box-border w-fit shrink-0 h-fit flex gap-0 py-1.5 px-3.5 justify-start items-start bg-[#FFD700] hover:bg-[#FFD700]/85 active:scale-95 transition-all rounded-[999px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed border-none"
+          >
+            <div className="text-[13px]/[normal] box-border text-[#0A0E1A] font-semibold text-left whitespace-nowrap">
+              {copied ? "已複製" : "複製全部"}
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   );

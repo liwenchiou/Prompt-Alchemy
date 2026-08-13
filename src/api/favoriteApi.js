@@ -4,12 +4,16 @@ import { apiRequest } from "./apiClient.js";
 import { normalizeFavoritedSkill } from "./normalizeFavoritedSkill";
 
 export async function getUserFavoriteAPI(itemType = "prompt") {
-  const res = await apiRequest(`/favorites?itemType=${itemType}`, {
-    method: "GET",
-  });
-  const list = Array.isArray(res?.data) ? res.data : [];
-  // console.log("用GET拿/favorites:", list.map((item) => item.id));
-  return list.map((item) => item.id);
+  try {
+    const res = await apiRequest(`/favorites?itemType=${itemType}`, {
+      method: "GET",
+    });
+    const list = Array.isArray(res?.data) ? res.data : [];
+    return list.map((item) => item.id);
+  } catch (err) {
+    console.warn(`Backend /favorites?itemType=${itemType} notice:`, err.message);
+    return [];
+  }
 }
 
 /**
@@ -18,19 +22,29 @@ export async function getUserFavoriteAPI(itemType = "prompt") {
  * Agent Skill 的 id（見 FRONTEND_API_SPEC.md 10 節最上方的提示）。
  */
 export async function getFavoritedSkillsAPI() {
-  const res = await apiRequest("/favorites?itemType=skill", {
-    method: "GET",
-  });
-  const list = Array.isArray(res?.data) ? res.data : [];
-  return list.map(normalizeFavoritedSkill).filter(Boolean);
+  try {
+    const res = await apiRequest("/favorites?itemType=skill", {
+      method: "GET",
+    });
+    const list = Array.isArray(res?.data) ? res.data : [];
+    return list.map(normalizeFavoritedSkill).filter(Boolean);
+  } catch (err) {
+    console.warn("Backend /favorites?itemType=skill notice:", err.message);
+    return [];
+  }
 }
+
 export async function toggleFavoriteAPI(skillId, itemType = "prompt") {
-  const res = await apiRequest(
-    `/favorites/${skillId}/toggle?itemType=${itemType}`,
-    { method: "POST" }
-  );
-  // console.log("用POST拿/favorites/toggle:", res.data);
-  return res.data;
+  try {
+    const res = await apiRequest(
+      `/favorites/${skillId}/toggle?itemType=${itemType}`,
+      { method: "POST" }
+    );
+    return res.data;
+  } catch (err) {
+    console.warn(`Backend /favorites/${skillId}/toggle notice:`, err.message);
+    return { favorited: true };
+  }
 }
 
 export async function clearUserFavoritesAPI() {

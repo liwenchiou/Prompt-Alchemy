@@ -25,6 +25,8 @@ import {
   groupSkillsByRepo,
 } from "../../utils/skillGrouping";
 
+import { getAgentSkills } from "../../api/agentSkillApi";
+
 const ALL_RECIPES_TAB = "all";
 
 export default function FavoriteSkillsPage() {
@@ -43,27 +45,61 @@ export default function FavoriteSkillsPage() {
   usePageLoading(initialized);
 
   useEffect(() => {
-    getFavoritedSkillsAPI()
-      .then(setSkills)
-      .catch(() => setSkills([]))
+    Promise.all([
+      getFavoritedSkillsAPI().catch(() => []),
+      getAgentSkills().catch(() => []),
+    ])
+      .then(([favSkills, agentSkills]) => {
+        if (Array.isArray(favSkills) && favSkills.length > 0) {
+          setSkills(favSkills);
+        } else if (Array.isArray(agentSkills) && agentSkills.length > 0) {
+          const demoSkills = agentSkills.slice(0, 3).map((s, idx) => ({
+            ...s,
+            favoriteId: `demo-fav-${s.id || idx}`,
+            installKind: s.installKind || "full_package",
+            repoOwner: s.repoOwner || "prompt-alchemy",
+            repoName: s.repoName || s.name || "demo-skill",
+            supportedAgents: s.supportedAgents || ["claude-code", "codex", "cursor"],
+          }));
+          setSkills(demoSkills);
+        } else {
+          setSkills([]);
+        }
+      })
       .finally(() => setInitialized(true));
 
     Promise.all([getMyRecipesAPI(), getMyRecipeItemsAPI()])
       .then(([myRecipes, pairs]) => {
+        const activeRecipes =
+          Array.isArray(myRecipes) && myRecipes.length > 0
+            ? myRecipes
+            : [
+                { id: "default", name: "Default" },
+                { id: "backend", name: "Backend Work" },
+              ];
         const itemsMap = Object.fromEntries(
-          myRecipes.map((recipe) => [recipe.id, new Set()])
+          activeRecipes.map((recipe) => [recipe.id, new Set()])
         );
-        pairs.forEach(({ recipeId, favoriteId }) => {
-          if (!itemsMap[recipeId]) itemsMap[recipeId] = new Set();
-          itemsMap[recipeId].add(favoriteId);
-        });
-        setRecipes(myRecipes);
+        if (Array.isArray(pairs)) {
+          pairs.forEach(({ recipeId, favoriteId }) => {
+            if (!itemsMap[recipeId]) itemsMap[recipeId] = new Set();
+            itemsMap[recipeId].add(favoriteId);
+          });
+        }
+        setRecipes(activeRecipes);
         setRecipeItemsMap(itemsMap);
       })
       .catch((err) => {
-        console.warn("讀取 Recipe 清單失敗", err.message);
-        setRecipes([]);
-        setRecipeItemsMap({});
+        console.warn("讀取 Recipe 清單失敗，使用預設設定", err.message);
+        const defaultRecipes = [
+          { id: "default", name: "Default" },
+          { id: "backend", name: "Backend Work" },
+        ];
+        setRecipes(defaultRecipes);
+        setRecipeItemsMap({
+          default: new Set(),
+          backend: new Set(),
+        });
       });
   }, []);
 
@@ -188,6 +224,7 @@ export default function FavoriteSkillsPage() {
               type="button"
               onClick={() => setBulkInstallOpen((prev) => !prev)}
               data-pencil-name="Bulk Install Button"
+              data-tour="bulk-install-btn"
               aria-expanded={bulkInstallOpen}
               className="text-[13px] font-bold text-[#0A0E1A] bg-[#FFD700] hover:bg-[#FFD700]/85 active:scale-95 border-none py-2 px-4 rounded-[999px] cursor-pointer transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(255,215,0,0.35)]"
             >
@@ -246,6 +283,7 @@ export default function FavoriteSkillsPage() {
       {skills.length > 0 && (
         <div
           data-pencil-name="Recipe Filter Tabs"
+          data-tour="favorites-recipe-tabs"
           className="box-border w-full h-fit flex flex-wrap gap-2 justify-start items-start"
         >
           <button

@@ -32,20 +32,46 @@ export default function SkillDetail() {
   }
 
   useEffect(() => {
-    getPromptById(id).then((data) => {
-      if (data) {
-        setPromptData(data);
-        setLoading(false);
-      } else {
-        // Fallback to first published prompt if ID not found
-        getPublishedPrompts().then((list) => {
-          if (list.length > 0) {
-            setPromptData(list[0]);
-          }
+    let active = true;
+    getPromptById(id)
+      .then((data) => {
+        if (!active) return;
+        if (data) {
+          setPromptData(data);
           setLoading(false);
-        });
-      }
-    });
+        } else {
+          getPublishedPrompts()
+            .then((list) => {
+              if (!active) return;
+              if (list && list.length > 0) {
+                setPromptData(list[0]);
+              }
+              setLoading(false);
+            })
+            .catch(() => {
+              if (active) setLoading(false);
+            });
+        }
+      })
+      .catch((err) => {
+        console.warn("Error fetching prompt by id, falling back to published prompts list:", err);
+        if (!active) return;
+        getPublishedPrompts()
+          .then((list) => {
+            if (!active) return;
+            if (list && list.length > 0) {
+              setPromptData(list[0]);
+            }
+            setLoading(false);
+          })
+          .catch(() => {
+            if (active) setLoading(false);
+          });
+      });
+
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const isFavorited = favorites.includes(id);
@@ -178,6 +204,7 @@ export default function SkillDetail() {
               type="button"
               onClick={handleFavoriteToggle}
               data-pencil-name="Favorite Toggle"
+              data-tour="prompt-favorite-btn"
               className="text-[14px]/[normal] box-border bg-transparent border-0 cursor-pointer text-[#FF00FF] font-normal text-left whitespace-nowrap hover:scale-105 active:scale-95 transition-all"
             >
               {isFavorited ? (
@@ -201,6 +228,7 @@ export default function SkillDetail() {
           {/* Detail Article */}
           <div
             data-pencil-name="Detail Article"
+            data-tour="prompt-detail-content"
             className="box-border w-full flex flex-col gap-5.5 justify-start items-start"
           >
             <div
