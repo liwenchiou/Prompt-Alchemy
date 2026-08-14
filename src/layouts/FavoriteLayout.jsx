@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet, NavLink, useNavigate, Navigate } from "react-router-dom";
 import { Heart, Sparkles, User, Lock, LogOut } from "lucide-react";
 import useAuth from "../hooks/useAuth";
@@ -9,8 +10,9 @@ export default function FavoriteLayout() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [collapsed, toggleCollapsed] = useCollapsible();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  if (loading) {
+  if (loading || isLoggingOut) {
     return null;
   }
 
@@ -24,8 +26,11 @@ export default function FavoriteLayout() {
       "登出後將返回首頁。"
     );
     if (!confirmed) return;
-    logout();
-    navigate("/");
+    setIsLoggingOut(true);
+    navigate("/", { replace: true });
+    setTimeout(() => {
+      logout();
+    }, 0);
   };
 
   const navLinkClassName = ({ isActive }) =>

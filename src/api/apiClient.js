@@ -43,7 +43,10 @@ apiClient.interceptors.response.use(
       if (error.response.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        eventBus.emit("auth:expired");
+        const requestUrl = error.config?.url || "";
+        if (!requestUrl.includes("/auth/logout") && !error.config?.skipAuthExpired) {
+          eventBus.emit("auth:expired");
+        }
       }
 
       const data = error.response.data;

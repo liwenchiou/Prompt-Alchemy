@@ -99,6 +99,7 @@ export async function logoutUser() {
   try {
     await apiRequest("/auth/logout", {
       method: "POST",
+      skipAuthExpired: true,
     });
   } catch (err) {
     console.warn("Logout API notice:", err.message);
