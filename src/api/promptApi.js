@@ -162,6 +162,15 @@ function mapRemotePrompt(item, storedSkills) {
     (createdAt ? new Date(createdAt) >= new Date("2026-06-25T00:00:00Z") : false);
   const isHot = item.isHot ?? (favCount >= 20);
 
+  const categoryId = item.categoryId || item.category_id;
+  const categoryName =
+    (typeof item.category === "string" ? item.category : item.category?.name) ||
+    item.categoryName ||
+    getParameterName(categoryId) ||
+    categoryId ||
+    "";
+  const memoText = item.memo || item.categoryMemo || item.category?.memo || "";
+
   return {
     id: item.id,
     title: item.title,
@@ -173,7 +182,7 @@ function mapRemotePrompt(item, storedSkills) {
     useCase: item.useCase || item.use_case,
     exampleInput: item.exampleInput || item.example_input,
     exampleOutput: normalizeExampleOutput(item.exampleOutput ?? item.example_output),
-    categoryId: item.categoryId || item.category_id,
+    categoryId,
     tags,
     sourceUrl: item.sourceUrl || item.source_url,
     copyCount: cpCount,
@@ -181,8 +190,8 @@ function mapRemotePrompt(item, storedSkills) {
     createdAt,
     updatedAt: item.updatedAt || item.updated_at,
     isActive: item.isActive ?? item.is_active ?? true,
-    memo: item.memo || item.categoryMemo || "",
-    category: item.category || item.categoryName || "",
+    memo: memoText,
+    category: categoryName,
     date: createdDate,
     isNew,
     isHot,
@@ -305,6 +314,7 @@ export async function getPublishedPrompts(queryParams = {}) {
       }
     } catch (err) {
       console.warn("Backend /prompts API notice, falling back to mock data:", err.message);
+      if (isNoFilter) publishedPromptsPromise = null;
     }
     return getFallbackPrompts();
   })();

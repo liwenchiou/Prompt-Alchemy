@@ -26,17 +26,23 @@ export default function Home() {
 
   const [prompts, setPrompts] = useState([]);
   const [agentSkills, setAgentSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // 資料就緒後關閉 loading
-  usePageLoading(prompts.length > 0);
+  usePageLoading(!loading);
 
   useEffect(() => {
-    getPublishedPrompts().then((list) => {
-      setPrompts(list);
+    setLoading(true);
+    Promise.all([
+      getPublishedPrompts()
+        .then((list) => setPrompts(list))
+        .catch(() => setPrompts([])),
+      getAgentSkills()
+        .then((list) => setAgentSkills(list))
+        .catch(() => setAgentSkills([])),
+    ]).finally(() => {
+      setLoading(false);
     });
-    getAgentSkills()
-      .then((list) => setAgentSkills(list))
-      .catch(() => setAgentSkills([]));
   }, []);
 
   const featuredPrompts = [...prompts]

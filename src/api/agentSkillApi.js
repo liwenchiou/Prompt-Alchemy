@@ -5,6 +5,11 @@ import { agentSkillsTable } from "./mocks/mockData";
 export function normalizeAgentSkill(item) {
   if (typeof item?.id !== "string" || !item.id) return null;
 
+  const categoryName =
+    (typeof item.category === "string" ? item.category : item.category?.name) ||
+    item.categoryName ||
+    "";
+
   return {
     id: item.id,
     name: item.name || "",
@@ -18,7 +23,7 @@ export function normalizeAgentSkill(item) {
     creatorProfileUrl: item.creatorProfileUrl || item.creator_profile_url || "",
     license: item.license || "",
     categoryId: item.categoryId || item.category_id || "",
-    categoryName: item.category || item.categoryName || "",
+    categoryName,
     stargazersCount: item.stargazersCount ?? item.stargazers_count ?? 0,
     copyCount: item.copyCount ?? item.copy_count ?? 0,
     favoriteCount: item.favoriteCount ?? item.favorite_count ?? 0,
@@ -86,12 +91,10 @@ export async function getAgentSkills({ keyword, categoryId } = {}) {
       }
     } catch (err) {
       console.warn("Backend /agent-skills API notice, falling back to mock data:", err.message);
+      if (isNoFilter) allAgentSkillsPromise = null;
     }
     return getFallbackAgentSkills({ keyword, categoryId });
-  })().catch((err) => {
-    if (isNoFilter) allAgentSkillsPromise = null;
-    return getFallbackAgentSkills({ keyword, categoryId });
-  });
+  })();
 
   if (isNoFilter) {
     allAgentSkillsPromise = fetchPromise;

@@ -51,11 +51,12 @@ export default function Skills() {
   const [prompts, setPrompts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, toggleSidebarCollapsed] = useCollapsible();
   const promptsRequestId = useRef(0);
 
   // 資料就緒後關閉 loading
-  usePageLoading(prompts.length > 0);
+  usePageLoading(!loading);
 
   useEffect(() => {
     setSelectedCategory(routeCategory || "全部");
@@ -65,31 +66,49 @@ export default function Skills() {
   useEffect(() => {
     const loadPrompts = async () => {
       const requestId = ++promptsRequestId.current;
-      const list = await getPublishedPrompts();
-      if (requestId === promptsRequestId.current) {
-        setPrompts(list);
+      try {
+        const list = await getPublishedPrompts();
+        if (requestId === promptsRequestId.current) {
+          setPrompts(list);
+        }
+      } catch (err) {
+        if (requestId === promptsRequestId.current) {
+          setPrompts([]);
+        }
+      } finally {
+        if (requestId === promptsRequestId.current) {
+          setLoading(false);
+        }
       }
     };
 
     // Load categories
-    getCategories().then((cats) => {
-      setCategories([
-        { name: "全部", icon: null, memo: "" },
-        { name: "最新Prompts", icon: null, memo: "" },
-        // { name: "熱門分類", icon: null, memo: "" },
-        ...cats.map((c) => ({
-          id: c.id,
-          name: c.name,
-          icon: null,
-          memo: c.memo || "",
-        })),
-      ]);
-    });
+    getCategories()
+      .then((cats) => {
+        setCategories([
+          { name: "全部", icon: null, memo: "" },
+          { name: "最新Prompts", icon: null, memo: "" },
+          ...cats.map((c) => ({
+            id: c.id,
+            name: c.name,
+            icon: null,
+            memo: c.memo || "",
+          })),
+        ]);
+      })
+      .catch(() => {
+        setCategories([
+          { name: "全部", icon: null, memo: "" },
+          { name: "最新Prompts", icon: null, memo: "" },
+        ]);
+      });
 
     // Load tags
-    getTags().then((tgList) => {
-      setTags(tgList);
-    });
+    getTags()
+      .then((tgList) => {
+        setTags(tgList);
+      })
+      .catch(() => setTags([]));
 
     loadPrompts();
     const unsubscribe = eventBus.on(PUBLISHED_PROMPTS_UPDATED_EVENT, loadPrompts);

@@ -11,7 +11,8 @@ import {
   getCurrentUser,
   logoutUser as apiLogoutUser,
 } from "../api/authApi";
-import { refreshPublishedPrompts } from "../api/promptApi";
+import { refreshPublishedPrompts, clearPublishedPromptsCache } from "../api/promptApi";
+import { clearAgentSkillsCache } from "../api/agentSkillApi";
 import { alertHelper } from "../utils/sweetAlert";
 import { eventBus } from "../utils/eventBus";
 
@@ -57,6 +58,8 @@ export function AuthProvider({ children }) {
           setUser(null);
           setFavorites([]);
           setSkillFavorites([]);
+          clearPublishedPromptsCache();
+          clearAgentSkillsCache();
         }
       } else if (!IS_ONLINE_MODE && storedUser) {
         try {
@@ -79,6 +82,8 @@ export function AuthProvider({ children }) {
       setUser(null);
       setFavorites([]);
       setSkillFavorites([]);
+      clearPublishedPromptsCache();
+      clearAgentSkillsCache();
       alertHelper.error("登入逾期", "您的登入已過期，請重新登入", true);
     });
 
@@ -92,6 +97,8 @@ export function AuthProvider({ children }) {
     if (userData.token) {
       localStorage.setItem("token", userData.token);
     }
+    clearPublishedPromptsCache();
+    clearAgentSkillsCache();
     try {
       const favs = await getUserFavoriteAPI();
       setFavorites(favs);
@@ -118,6 +125,8 @@ export function AuthProvider({ children }) {
     setSkillFavorites([]);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    clearPublishedPromptsCache();
+    clearAgentSkillsCache();
     alertHelper.success("已登出", "您已安全登出帳號", true);
   };
 
