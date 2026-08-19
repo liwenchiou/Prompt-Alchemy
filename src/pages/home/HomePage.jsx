@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { A11y, Keyboard, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -20,9 +22,14 @@ import {
 } from "lucide-react";
 import ContactWidget from "../../components/ContactWidget/ContactWidget";
 import FAQSection from "../../components/FAQSection/FAQSection";
+import PacmanBackground from "../../components/PacmanBackground/PacmanBackground";
 import searchPromptPixel from "../../assets/images/prompt-alchemy/search-prompt-pixel.png";
-import savePromptPixel from "../../assets/images/prompt-alchemy/save-prompt-pixel.png";
+import saveSkillPixel from "../../assets/images/prompt-alchemy/save-prompt-pixel.png";
 import launchSkillPixel from "../../assets/images/prompt-alchemy/launch-skill-pixel.png";
+
+const VALUE_HEADLINE =
+  "是不是常常忘記skill放在哪裡,\n或是每次都要複製檔案貼上,\n還是跨裝置就沒辦法用自己的skill";
+const VALUE_HEADLINE_PREFIX = "你…";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -30,12 +37,29 @@ export default function Home() {
   const [prompts, setPrompts] = useState([]);
   const [agentSkills, setAgentSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [prefersReducedMotion] = useState(
+    () =>
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false
+  );
+  const [typedValueHeadline, setTypedValueHeadline] = useState(() =>
+    prefersReducedMotion ? VALUE_HEADLINE : ""
+  );
+  const [isValueHeadlineTyping, setIsValueHeadlineTyping] = useState(false);
 
   // 資料就緒後關閉 loading
   usePageLoading(!loading);
 
   useEffect(() => {
-    setLoading(true);
+    AOS.init({
+      duration: 1200,
+      offset: 0,
+      once: false,
+      mirror: true,
+    });
+  }, []);
+
+  useEffect(() => {
+    // setLoading(true);
     Promise.all([
       getPublishedPrompts()
         .then((list) => setPrompts(list))
@@ -47,6 +71,42 @@ export default function Home() {
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (loading) return undefined;
+
+    const refreshFrame = window.requestAnimationFrame(() => {
+      AOS.refreshHard();
+    });
+
+    return () => window.cancelAnimationFrame(refreshFrame);
+  }, [loading]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) return undefined;
+
+    const typingStartTimer = window.setTimeout(() => {
+      setIsValueHeadlineTyping(true);
+    }, 3000);
+
+    return () => window.clearTimeout(typingStartTimer);
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    if (!isValueHeadlineTyping) return undefined;
+
+    let characterIndex = 0;
+    const typingTimer = window.setInterval(() => {
+      characterIndex += 1;
+      setTypedValueHeadline(VALUE_HEADLINE.slice(0, characterIndex));
+
+      if (characterIndex === VALUE_HEADLINE.length) {
+        window.clearInterval(typingTimer);
+      }
+    }, 120);
+
+    return () => window.clearInterval(typingTimer);
+  }, [isValueHeadlineTyping]);
 
   const featuredPrompts = [...prompts]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -67,55 +127,60 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full bg-[#0A0E1A] text-[#E0F0E8] px-6 py-8 flex flex-col items-center">
-      {/* Hero Zone */}
-      <div
-        data-pencil-name="Hero Zone"
-        className="relative box-border w-full max-w-350 h-auto shrink-0 flex flex-col md:flex-row gap-4 justify-between items-center py-24 border-b border-[#39FF14]/10 overflow-hidden"
-      >
+    <div className="relative isolate w-full bg-[#0A0E1A] px-6 py-8 text-[#E0F0E8]">
+      <PacmanBackground />
+      <div className="relative z-10 flex w-full flex-col items-center">
+        {/* Hero Zone */}
         <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-[url('/bg_01.gif')] bg-cover bg-center opacity-50"
-        />
-        <div aria-hidden="true" className="absolute inset-0 bg-[#0A0E1A]/45" />
-        <div
-          data-pencil-name="Hero Copy"
-          className="relative z-10 box-border w-full md:max-w-[50%] shrink-0 h-fit flex flex-col gap-5.5 justify-start items-start px-4"
+          data-pencil-name="Hero Zone"
+          className="relative box-border w-full max-w-350 h-auto shrink-0 flex flex-col md:flex-row gap-4 justify-between items-center py-24 border-b border-[#39FF14]/10 overflow-hidden"
         >
           <div
-            data-pencil-name="Hero Title"
-            className="text-[24px]/[28px] sm:text-[36px]/[42px] lg:text-[52px]/[57px] box-border w-full text-[#FFFFFF] font-bold text-left flex md:flex-col"
-          >
-            <h3>
-              <span className="font-kyo text-[#FFD700]">10秒</span> 安裝
-            </h3>
-            <h3>你的AI Prompt 與 Skill</h3>
-          </div>
+            aria-hidden="true"
+            className="absolute inset-0 bg-[url('/bg_01.gif')] bg-cover bg-center opacity-50"
+          />
           <div
-            data-pencil-name="Hero Body"
-            className="text-[16px]/[24px] lg:text-[18px]/[27px] box-border w-full text-[#7DCEA0] font-normal text-left flex-col"
-          >
-            <h5>一鍵安裝常用指令，</h5>
-            <h5>還能分類、搜尋、收藏。</h5>
-          </div>
+            aria-hidden="true"
+            className="absolute inset-0 bg-[#0A0E1A]/45"
+          />
           <div
-            data-pencil-name="Hero Actions"
-            className="box-border w-full h-fit shrink-0 flex gap-3.5 justify-center sm:justify-start items-start"
+            data-pencil-name="Hero Copy"
+            className="relative z-10 box-border w-full md:max-w-[50%] shrink-0 h-fit flex flex-col gap-5.5 justify-start items-start px-4"
           >
-            <Link
-              to="/skills"
-              data-pencil-name="Primary CTA"
-              data-tour="hero-cta"
-              className="box-border w-fit shrink-0 h-fit flex gap-0 py-3.5 px-6 justify-center sm:justify-start items-start active:scale-95 transition-all rounded-lg no-underline cursor-pointer bg-[#39FF14] hover:bg-[#32dd10]"
+            <div
+              data-pencil-name="Hero Title"
+              className="text-[24px]/[28px] sm:text-[36px]/[42px] lg:text-[52px]/[57px] box-border w-full text-[#FFFFFF] font-bold text-left flex md:flex-col flex-wrap"
             >
-              <div
-                data-pencil-name="Primary CTA Label"
-                className="text-[16px]/[normal] box-border font-bold text-left text-[#0A0E1A] whitespace-nowrap"
+              <h3>
+                <span className="font-kyo text-[#FFD700]">10秒</span> 安裝
+              </h3>
+              <h3>你的AI Prompt 與 Skill</h3>
+            </div>
+            <div
+              data-pencil-name="Hero Body"
+              className="text-[16px]/[24px] lg:text-[18px]/[27px] box-border w-full text-[#7DCEA0] font-normal text-left flex-col"
+            >
+              <h5>一鍵安裝常用指令</h5>
+              <h5>還能分類、搜尋、收藏</h5>
+            </div>
+            <div
+              data-pencil-name="Hero Actions"
+              className="box-border w-full h-fit shrink-0 flex gap-3.5 justify-center sm:justify-start items-start"
+            >
+              <Link
+                to="/skills"
+                data-pencil-name="Primary CTA"
+                data-tour="hero-cta"
+                className="box-border w-fit shrink-0 h-fit flex gap-0 py-3.5 px-6 justify-center sm:justify-start items-start active:scale-95 transition-all rounded-lg no-underline cursor-pointer bg-[#39FF14] hover:bg-[#32dd10]"
               >
-                開始探索
-              </div>
-            </Link>
-            {/* <a
+                <div
+                  data-pencil-name="Primary CTA Label"
+                  className="text-[16px]/[normal] box-border font-bold text-left text-[#0A0E1A] whitespace-nowrap"
+                >
+                  開始探索
+                </div>
+              </Link>
+              {/* <a
               href="#featured-skills"
               data-pencil-name="Secondary CTA"
               className="box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-3.5 px-6 justify-start items-start bg-transparent border border-[#00FFFF] hover:bg-[#00FFFF]/10 active:scale-95 transition-all rounded-lg no-underline cursor-pointer"
@@ -127,47 +192,47 @@ export default function Home() {
                 查看範例
               </div>
             </a> */}
+            </div>
+          </div>
+          <div className="relative z-10 w-full md:w-auto flex justify-center md:justify-end px-4 sm:px-8 md:ps-0">
+            <HeroDevice />
+
+            <div className="hidden lg:flex flex-col gap-4 absolute right-0 top-8 translate-x-[115%]">
+              <span className="px-4 py-1 rounded-full border border-[#00FFFF]/65 bg-[#0A1022]/90 text-[#8CF9FF] text-sm font-semibold">
+                #backend
+              </span>
+              <span className="px-4 py-1 rounded-full border border-[#FF00FF]/65 bg-[#0A1022]/90 text-[#F4A6FF] text-sm font-semibold">
+                #debug
+              </span>
+              <span className="w-11 h-11 rounded-full border border-[#FFD700]/80 bg-[#FFD700]/90 text-[#0A0E1A] text-xl grid place-items-center shadow-[0_0_20px_rgba(255,215,0,0.55)]">
+                ★
+              </span>
+            </div>
           </div>
         </div>
-        <div className="relative z-10 w-full md:w-auto flex justify-center md:justify-end px-4 sm:px-8 md:ps-0">
-          <HeroDevice />
 
-          <div className="hidden lg:flex flex-col gap-4 absolute right-0 top-8 translate-x-[115%]">
-            <span className="px-4 py-1 rounded-full border border-[#00FFFF]/65 bg-[#0A1022]/90 text-[#8CF9FF] text-sm font-semibold">
-              #backend
-            </span>
-            <span className="px-4 py-1 rounded-full border border-[#FF00FF]/65 bg-[#0A1022]/90 text-[#F4A6FF] text-sm font-semibold">
-              #debug
-            </span>
-            <span className="w-11 h-11 rounded-full border border-[#FFD700]/80 bg-[#FFD700]/90 text-[#0A0E1A] text-xl grid place-items-center shadow-[0_0_20px_rgba(255,215,0,0.55)]">
-              ★
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Section */}
-      <div
-        data-pencil-name="Category Section"
-        className="box-border w-full max-w-350 h-fit shrink-0 flex flex-col gap-5 justify-start items-start mt-12"
-      >
+        {/* Category Section */}
         <div
-          data-pencil-name="Category Heading"
-          className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left whitespace-nowrap"
+          data-pencil-name="Category Section"
+          className="box-border w-full max-w-350 h-fit shrink-0 flex flex-col gap-5 justify-start items-start mt-12"
         >
-          所有分類
-        </div>
-        <div
-          data-pencil-name="Category Row"
-          className="box-border w-full h-fit shrink-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 justify-start items-start"
-        >
-          {/* 前端開發 */}
           <div
-            onClick={() => handleCategoryClick("前端開發")}
-            data-pencil-name="前端開發"
-            className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#00FFFF] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
+            data-pencil-name="Category Heading"
+            className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left whitespace-nowrap"
           >
-            {/* <svg
+            所有分類
+          </div>
+          <div
+            data-pencil-name="Category Row"
+            className="box-border w-full h-fit shrink-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 justify-start items-start"
+          >
+            {/* 前端開發 */}
+            <div
+              onClick={() => handleCategoryClick("前端開發")}
+              data-pencil-name="前端開發"
+              className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#00FFFF] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              {/* <svg
               data-pencil-name="Category Icon"
               viewBox="0 0 14 14"
               preserveAspectRatio="xMidYMid meet"
@@ -179,30 +244,30 @@ export default function Home() {
                 fill="#00FFFF"
               />
             </svg> */}
-            <CodeXml
-              data-pencil-name="Category Icon"
-              className="box-border w-7 h-7 shrink-0 text-[#00FFFF]"
-            />
-            <div
-              data-pencil-name="Category Title"
-              className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
-            >
-              前端開發
+              <CodeXml
+                data-pencil-name="Category Icon"
+                className="box-border w-7 h-7 shrink-0 text-[#00FFFF]"
+              />
+              <div
+                data-pencil-name="Category Title"
+                className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
+              >
+                前端開發
+              </div>
+              <div
+                data-pencil-name="Category Count"
+                className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              >
+                {countByCategory("前端開發")} 個技能
+              </div>
             </div>
+            {/* 後端開發 */}
             <div
-              data-pencil-name="Category Count"
-              className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              onClick={() => handleCategoryClick("後端開發")}
+              data-pencil-name="後端開發"
+              className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#39FF14] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
             >
-              {countByCategory("前端開發")} 個技能
-            </div>
-          </div>
-          {/* 後端開發 */}
-          <div
-            onClick={() => handleCategoryClick("後端開發")}
-            data-pencil-name="後端開發"
-            className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#39FF14] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            {/* <svg
+              {/* <svg
               data-pencil-name="Category Icon"
               viewBox="0 0 14 14"
               preserveAspectRatio="xMidYMid meet"
@@ -214,34 +279,34 @@ export default function Home() {
                 fill="#39FF14"
               />
             </svg> */}
-            <Database
-              data-pencil-name="Category Icon"
-              className="box-border w-7 h-7 shrink-0 text-[#39FF14]"
-            />
-            <div
-              data-pencil-name="Category Title"
-              className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
-            >
-              後端開發
+              <Database
+                data-pencil-name="Category Icon"
+                className="box-border w-7 h-7 shrink-0 text-[#39FF14]"
+              />
+              <div
+                data-pencil-name="Category Title"
+                className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
+              >
+                後端開發
+              </div>
+              <div
+                data-pencil-name="Category Count"
+                className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              >
+                {countByCategory("後端開發")} 個技能
+              </div>
             </div>
+            {/* 資安相關 */}
             <div
-              data-pencil-name="Category Count"
-              className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              onClick={() => handleCategoryClick("資安相關")}
+              data-pencil-name="資安相關"
+              className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FF00FF] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
             >
-              {countByCategory("後端開發")} 個技能
-            </div>
-          </div>
-          {/* 資安相關 */}
-          <div
-            onClick={() => handleCategoryClick("資安相關")}
-            data-pencil-name="資安相關"
-            className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FF00FF] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            <ShieldCheck
-              data-pencil-name="Category Icon"
-              className="box-border w-7 h-7 shrink-0 text-[#FF00FF]"
-            />
-            {/* <svg
+              <ShieldCheck
+                data-pencil-name="Category Icon"
+                className="box-border w-7 h-7 shrink-0 text-[#FF00FF]"
+              />
+              {/* <svg
               data-pencil-name="Category Icon"
               viewBox="0 0 14 14"
               preserveAspectRatio="xMidYMid meet"
@@ -253,26 +318,26 @@ export default function Home() {
                 fill="#FF00FF"
               />
             </svg> */}
-            <div
-              data-pencil-name="Category Title"
-              className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
-            >
-              資安相關
+              <div
+                data-pencil-name="Category Title"
+                className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
+              >
+                資安相關
+              </div>
+              <div
+                data-pencil-name="Category Count"
+                className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              >
+                {countByCategory("資安相關")} 個技能
+              </div>
             </div>
+            {/* 設計 / UX */}
             <div
-              data-pencil-name="Category Count"
-              className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              onClick={() => handleCategoryClick("設計 / UX")}
+              data-pencil-name="設計 / UX"
+              className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FFD700] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
             >
-              {countByCategory("資安相關")} 個技能
-            </div>
-          </div>
-          {/* 設計 / UX */}
-          <div
-            onClick={() => handleCategoryClick("設計 / UX")}
-            data-pencil-name="設計 / UX"
-            className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FFD700] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            {/* <svg
+              {/* <svg
               data-pencil-name="Category Icon"
               viewBox="0 0 14 14"
               preserveAspectRatio="xMidYMid meet"
@@ -284,34 +349,34 @@ export default function Home() {
                 fill="#FFD700"
               />
             </svg> */}
-            <Palette
-              data-pencil-name="Category Icon"
-              className="box-border w-7 h-7 shrink-0 text-[#FFD700]"
-            />
-            <div
-              data-pencil-name="Category Title"
-              className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
-            >
-              設計 / UX
+              <Palette
+                data-pencil-name="Category Icon"
+                className="box-border w-7 h-7 shrink-0 text-[#FFD700]"
+              />
+              <div
+                data-pencil-name="Category Title"
+                className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
+              >
+                設計 / UX
+              </div>
+              <div
+                data-pencil-name="Category Count"
+                className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              >
+                {countByCategory("設計 / UX")} 個技能
+              </div>
             </div>
+            {/* 翻譯助手 */}
             <div
-              data-pencil-name="Category Count"
-              className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              onClick={() => handleCategoryClick("翻譯助手")}
+              data-pencil-name="翻譯助手"
+              className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FF8C00] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
             >
-              {countByCategory("設計 / UX")} 個技能
-            </div>
-          </div>
-          {/* 翻譯助手 */}
-          <div
-            onClick={() => handleCategoryClick("翻譯助手")}
-            data-pencil-name="翻譯助手"
-            className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FF8C00] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            <Languages
-              data-pencil-name="Category Icon"
-              className="box-border w-7 h-7 shrink-0 text-[#FF8C00]"
-            />
-            {/* <svg
+              <Languages
+                data-pencil-name="Category Icon"
+                className="box-border w-7 h-7 shrink-0 text-[#FF8C00]"
+              />
+              {/* <svg
               data-pencil-name="Category Icon"
               viewBox="0 0 14 14"
               preserveAspectRatio="xMidYMid meet"
@@ -323,30 +388,30 @@ export default function Home() {
                 fill="#FF8C00"
               />
             </svg> */}
-            <div
-              data-pencil-name="Category Title"
-              className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
-            >
-              翻譯助手
+              <div
+                data-pencil-name="Category Title"
+                className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
+              >
+                翻譯助手
+              </div>
+              <div
+                data-pencil-name="Category Count"
+                className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              >
+                {countByCategory("翻譯助手")} 個技能
+              </div>
             </div>
+            {/* 小工具 */}
             <div
-              data-pencil-name="Category Count"
-              className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              onClick={() => handleCategoryClick("小工具")}
+              data-pencil-name="小工具"
+              className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FF3366] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
             >
-              {countByCategory("翻譯助手")} 個技能
-            </div>
-          </div>
-          {/* 小工具 */}
-          <div
-            onClick={() => handleCategoryClick("小工具")}
-            data-pencil-name="小工具"
-            className="box-border w-full h-fit flex flex-col gap-2.5 p-[16px_14px] justify-start items-center bg-[#111827] border border-[#FF3366] rounded-xl cursor-pointer hover:bg-[#111827]/80 hover:scale-[1.02] active:scale-95 transition-all"
-          >
-            <PocketKnife
-              data-pencil-name="Category Icon"
-              className="box-border w-7 h-7 shrink-0 text-[#FF3366]"
-            />
-            {/* <svg
+              <PocketKnife
+                data-pencil-name="Category Icon"
+                className="box-border w-7 h-7 shrink-0 text-[#FF3366]"
+              />
+              {/* <svg
               data-pencil-name="Category Icon"
               viewBox="0 0 14 14"
               preserveAspectRatio="xMidYMid meet"
@@ -358,196 +423,228 @@ export default function Home() {
                 fill="#FF3366"
               />
             </svg> */}
-            <div
-              data-pencil-name="Category Title"
-              className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
-            >
-              小工具
-            </div>
-            <div
-              data-pencil-name="Category Count"
-              className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
-            >
-              {countByCategory("小工具")} 個技能
+              <div
+                data-pencil-name="Category Title"
+                className="text-[14px]/[normal] box-border text-[#E0F0E8] font-semibold text-left whitespace-nowrap"
+              >
+                小工具
+              </div>
+              <div
+                data-pencil-name="Category Count"
+                className="text-[11px]/[normal] box-border text-[#51d688] font-normal text-left whitespace-nowrap"
+              >
+                {countByCategory("小工具")} 個技能
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Featured Prompts Section */}
-      <section
-        id="featured-skills"
-        data-tour="featured-prompts"
-        className="w-full max-w-350 mt-16 flex flex-col gap-6"
-      >
-        <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">
-          <div className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left m-0">
-            最新Prompts
-          </div>
-          <Link
-            to="/skills"
-            className="text-[14px] text-[#7DCEA0] hover:text-[#39FF14] transition-colors no-underline"
-          >
-            &lt; 瀏覽全部 &gt;
-          </Link>
-        </div>
-
-        <Swiper
-          className="featured-skills-carousel w-full"
-          modules={[A11y, Keyboard, Pagination]}
-          centeredSlides={canLoop}
-          loop={canLoop}
-          pagination={{ clickable: true, dynamicBullets: true }}
-          keyboard={{
-            enabled: true,
-          }}
-          spaceBetween={24}
-          slidesPerView={1}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-          }}
-          aria-label="最新Prompts輪播"
+        {/* Featured Prompts Section */}
+        <section
+          id="featured-skills"
+          data-tour="featured-prompts"
+          className="w-full max-w-350 mt-16 flex flex-col gap-6"
         >
-          {featuredPrompts.map((prompt) => (
-            <SwiperSlide key={prompt.id} className="h-auto">
-              <PromptCard prompt={prompt} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </section>
-
-      {/* Featured Skills Section */}
-      <section
-        id="featured-agent-skills"
-        data-tour="featured-agent-skills"
-        className="w-full max-w-350 mt-16 flex flex-col gap-6"
-      >
-        <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">
-          <div className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left m-0">
-            最新Skills
+          <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">
+            <div className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left m-0">
+              最新Prompts
+            </div>
+            <Link
+              to="/skills"
+              className="text-[14px] text-[#7DCEA0] hover:text-[#39FF14] transition-colors no-underline"
+            >
+              &lt; 瀏覽全部 &gt;
+            </Link>
           </div>
+
+          <Swiper
+            className="featured-skills-carousel w-full"
+            modules={[A11y, Keyboard, Pagination]}
+            centeredSlides={canLoop}
+            loop={canLoop}
+            pagination={{ clickable: true, dynamicBullets: true }}
+            keyboard={{
+              enabled: true,
+            }}
+            spaceBetween={24}
+            slidesPerView={1}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+            }}
+            aria-label="最新Prompts輪播"
+          >
+            {featuredPrompts.map((prompt) => (
+              <SwiperSlide key={prompt.id} className="h-auto">
+                <PromptCard prompt={prompt} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </section>
+
+        {/* Featured Skills Section */}
+        <section
+          id="featured-agent-skills"
+          data-tour="featured-agent-skills"
+          className="w-full max-w-350 mt-16 flex flex-col gap-6"
+        >
+          <div className="flex justify-between items-center border-b border-[#39FF14]/15 pb-3">
+            <div className="text-[24px]/[normal] box-border text-[#FFD700] font-bold text-left m-0">
+              最新Skills
+            </div>
+            <Link
+              to="/agent-skills"
+              className="text-[14px] text-[#7DCEA0] hover:text-[#39FF14] transition-colors no-underline"
+            >
+              &lt; 瀏覽全部 &gt;
+            </Link>
+          </div>
+
+          <Swiper
+            className="featured-skills-carousel w-full"
+            modules={[A11y, Keyboard, Pagination]}
+            centeredSlides={canLoopAgentSkills}
+            loop={canLoopAgentSkills}
+            pagination={{ clickable: true, dynamicBullets: true }}
+            keyboard={{ enabled: true }}
+            spaceBetween={24}
+            slidesPerView={1}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+            }}
+            aria-label="最新Skills輪播"
+          >
+            {featuredAgentSkills.map((skill) => (
+              <SwiperSlide key={skill.id} className="h-auto">
+                <SkillCard skill={skill} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </section>
+
+        {/* Why Prompt Alchemy Section */}
+        <section
+          aria-labelledby="prompt-alchemy-value-title"
+          data-aos="zoom-in-down"
+          className="w-full max-w-350 mt-18 overflow-hidden rounded-3xl border border-[#39FF14]/25 bg-[rgba(13,21,35,0.7)] px-5 py-12 sm:px-10 sm:py-15"
+        >
+          <div className="relative mx-auto max-w-3xl">
+            <div
+              aria-hidden="true"
+              className="absolute -top-22 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-[#39FF14]/12 blur-3xl"
+            />
+            <p className="relative text-xs font-bold tracking-[0.22em] text-[#39FF14] pb-4">
+              SOMETIMES WE ALL HAVE THE SAME PROBLEM
+            </p>
+            <h2
+              id="prompt-alchemy-value-title"
+              className="relative mt-3 text-3xl leading-tight font-bold text-white sm:text-4xl"
+              aria-label={`${VALUE_HEADLINE_PREFIX}${VALUE_HEADLINE}`}
+            >
+              <span
+                aria-hidden="true"
+                className="value-headline-intro-fade-in motion-reduce:animate-none"
+              >
+                {VALUE_HEADLINE_PREFIX}
+              </span>
+              <span aria-hidden="true" className="whitespace-pre-line">
+                {typedValueHeadline}
+              </span>
+              {isValueHeadlineTyping && (
+                <span
+                  aria-hidden="true"
+                  className="hero-caret *:animate-blink motion-reduce:animate-none"
+                >
+                  ?
+                </span>
+              )}
+            </h2>
+          </div>
+
+          <div className="relative mt-11 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-stretch lg:gap-6">
+            <article
+              data-aos="fade-down-right"
+              data-aos-delay="0"
+              className="flex flex-col items-center text-center"
+            >
+              <div className="flex h-60 w-full items-center justify-center sm:h-68">
+                <img
+                  src={searchPromptPixel}
+                  alt="像素冒險者用放大鏡尋找 Prompt"
+                  className="h-full w-full object-contain [image-rendering:pixelated]"
+                />
+              </div>
+              <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
+                快速瀏覽好用的 Skill
+              </h3>
+            </article>
+
+            <div
+              aria-hidden="true"
+              className="alchemy-connector hidden self-center text-3xl font-light text-[#39FF14] lg:block"
+            >
+              ×
+            </div>
+
+            <article
+              data-aos="flip-left"
+              data-aos-delay="700"
+              className="flex flex-col items-center text-center"
+            >
+              <div className="flex h-60 w-full items-center justify-center sm:h-68">
+                <img
+                  src={saveSkillPixel}
+                  alt="像素冒險者將 Skill 收進寶箱收藏"
+                  className="h-full w-full object-contain [image-rendering:pixelated]"
+                />
+              </div>
+              <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
+                喜歡的那一個
+                <br />
+                先收藏起來
+              </h3>
+            </article>
+
+            <div
+              aria-hidden="true"
+              className="alchemy-connector hidden self-center text-3xl font-light text-[#39FF14] lg:block"
+            >
+              ×
+            </div>
+
+            <article
+              data-aos="fade-up-left"
+              data-aos-delay="350"
+              className="flex flex-col items-center text-center"
+            >
+              <div className="flex h-60 w-full items-center justify-center sm:h-68">
+                <img
+                  src={launchSkillPixel}
+                  alt="像素冒險者從終端機啟動輔助機器人"
+                  className="h-full w-full object-contain [image-rendering:pixelated]"
+                />
+              </div>
+              <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
+                編好群組
+                <br />
+                一鍵複製
+              </h3>
+            </article>
+          </div>
+
           <Link
             to="/agent-skills"
-            className="text-[14px] text-[#7DCEA0] hover:text-[#39FF14] transition-colors no-underline"
+            className="mt-10 inline-flex items-center rounded-lg bg-[#39FF14] px-5 py-3 text-sm font-bold text-[#0A0E1A] no-underline transition-colors hover:bg-[#71FF52] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#39FF14]"
           >
-            &lt; 瀏覽全部 &gt;
+            尋找屬於你的 Skills
           </Link>
-        </div>
+        </section>
+        <FAQSection />
 
-        <Swiper
-          className="featured-skills-carousel w-full"
-          modules={[A11y, Keyboard, Pagination]}
-          centeredSlides={canLoopAgentSkills}
-          loop={canLoopAgentSkills}
-          pagination={{ clickable: true, dynamicBullets: true }}
-          keyboard={{ enabled: true }}
-          spaceBetween={24}
-          slidesPerView={1}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-          }}
-          aria-label="最新Skills輪播"
-        >
-          {featuredAgentSkills.map((skill) => (
-            <SwiperSlide key={skill.id} className="h-auto">
-              <SkillCard skill={skill} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </section>
-
-      {/* Why Prompt Alchemy Section */}
-      <section
-        aria-labelledby="prompt-alchemy-value-title"
-        className="w-full max-w-350 mt-18 overflow-hidden rounded-3xl border border-[#39FF14]/25 bg-[#0D1523] px-5 py-12 sm:px-10 sm:py-15"
-      >
-        <div className="relative mx-auto max-w-3xl">
-          <div
-            aria-hidden="true"
-            className="absolute -top-22 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-[#39FF14]/12 blur-3xl"
-          />
-          <p className="relative text-xs font-bold tracking-[0.22em] text-[#39FF14]">
-            PROMPT ALCHEMY LOOP
-          </p>
-          <h2
-            id="prompt-alchemy-value-title"
-            className="relative mt-3 text-3xl leading-tight font-bold text-white sm:text-4xl"
-          >
-            從「又要重打」到「直接開工」
-          </h2>
-          <p className="relative mt-4 text-base leading-7 text-[#A5D6B7]">
-            好用的 AI 指令不是用過就算了，收進來，下次直接派上用場。
-          </p>
-        </div>
-
-        <div className="relative mt-11 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-stretch lg:gap-6">
-          <article className="flex flex-col items-center text-center">
-            <div className="flex h-60 w-full items-center justify-center sm:h-68">
-              <img
-                src={searchPromptPixel}
-                alt="像素冒險者用放大鏡尋找 Prompt"
-                className="h-full w-full object-contain [image-rendering:pixelated]"
-              />
-            </div>
-            <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
-              好用的 Prompt，<br />下次不用再找。
-            </h3>
-          </article>
-
-          <div
-            aria-hidden="true"
-            className="alchemy-connector hidden self-center text-3xl font-light text-[#39FF14] lg:block"
-          >
-            ×
-          </div>
-
-          <article className="flex flex-col items-center text-center">
-            <div className="flex h-60 w-full items-center justify-center sm:h-68">
-              <img
-                src={savePromptPixel}
-                alt="像素冒險者將 Prompt 收進寶箱收藏"
-                className="h-full w-full object-contain [image-rendering:pixelated]"
-              />
-            </div>
-            <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
-              有感的那一個，<br />先收藏再說。
-            </h3>
-          </article>
-
-          <div
-            aria-hidden="true"
-            className="alchemy-connector hidden self-center text-3xl font-light text-[#39FF14] lg:block"
-          >
-            ×
-          </div>
-
-          <article className="flex flex-col items-center text-center">
-            <div className="flex h-60 w-full items-center justify-center sm:h-68">
-              <img
-                src={launchSkillPixel}
-                alt="像素冒險者從終端機啟動輔助機器人"
-                className="h-full w-full object-contain [image-rendering:pixelated]"
-              />
-            </div>
-            <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
-              挑好 Skill，<br />直接帶走。
-            </h3>
-          </article>
-        </div>
-
-        <Link
-          to="/skills"
-          className="mt-10 inline-flex items-center rounded-lg bg-[#39FF14] px-5 py-3 text-sm font-bold text-[#0A0E1A] no-underline transition-colors hover:bg-[#71FF52] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#39FF14]"
-        >
-          去找一個順手的 Prompt
-        </Link>
-      </section>
-      <FAQSection />
-
-      {/* 右下角聯絡我們表單 Widget */}
-      <ContactWidget />
+        {/* 右下角聯絡我們表單 Widget */}
+        <ContactWidget />
+      </div>
     </div>
   );
 }

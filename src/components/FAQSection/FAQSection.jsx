@@ -56,7 +56,7 @@ export default function FAQSection() {
       data-pencil-name="FAQ Section"
       className="w-full max-w-350 mt-16 pb-16 sm:pb-20"
     >
-      <div className="grid overflow-hidden rounded-2xl border border-[#1A3A2A] bg-[#0D1423] shadow-[0_24px_80px_rgba(0,0,0,0.22)] lg:grid-cols-[minmax(230px,0.34fr)_minmax(0,1fr)]">
+      <div className="grid overflow-hidden rounded-2xl border border-[#1A3A2A] bg-[rgba(13,20,35,0.7)] shadow-[0_24px_80px_rgba(0,0,0,0.22)] lg:grid-cols-[minmax(230px,0.34fr)_minmax(0,1fr)]">
         <div
           aria-hidden="true"
           data-pencil-name="Knowledge Console"
@@ -156,9 +156,7 @@ export default function FAQSection() {
                   <div
                     key={faq.id}
                     data-pencil-name="FAQ Item"
-                    className={
-                      index === 0 ? "" : "border-t border-[#1A3A2A]"
-                    }
+                    className={index === 0 ? "" : "border-t border-[#1A3A2A]"}
                   >
                     <button
                       type="button"

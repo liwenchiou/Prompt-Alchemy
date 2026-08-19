@@ -12,6 +12,42 @@ test.describe("首頁 (Homepage) 端到端測試 - Real DB & Standalone 連結",
     await expect(page.locator("nav, header, [role='navigation']").first()).toBeVisible();
   });
 
+  test("價值區塊捲動到畫面時會觸發 AOS 卡片動畫", async ({ page }) => {
+    await page.goto("/#/");
+
+    const valueSection = page.locator("section[data-aos=\"zoom-in-down\"]");
+    const leftValueCard = page.locator('[data-aos="fade-down-right"]');
+    await leftValueCard.scrollIntoViewIfNeeded();
+
+    await expect(page.locator("body")).toHaveAttribute("data-aos-duration", "1200");
+    await expect(valueSection).toHaveClass(/aos-animate/);
+    await expect(leftValueCard).toHaveClass(/aos-init/);
+    await expect(leftValueCard).toHaveClass(/aos-animate/);
+  });
+
+  test("街機背景會顯示一批 20 顆豆子且不攔截操作", async ({ page }) => {
+    await page.goto("/#/");
+
+    const background = page.locator(".pacman-background");
+    await expect(background).toBeVisible();
+    await expect(background).toHaveCSS("pointer-events", "none");
+    await expect(background.locator(".pacman-background-dot")).toHaveCount(20);
+    await expect(background.locator(".pacman-background-character")).toBeVisible();
+
+    const dotPositions = await background.locator(".pacman-background-dot").evaluateAll((dots) =>
+      dots.map((dot) => ({ left: dot.style.left, top: dot.style.top })),
+    );
+    for (let index = 1; index < dotPositions.length; index += 1) {
+      expect(
+        dotPositions[index].left === dotPositions[index - 1].left ||
+          dotPositions[index].top === dotPositions[index - 1].top,
+      ).toBe(true);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(background.locator(".pacman-background-dot")).toHaveCount(20);
+  });
+
   test("真實資料庫 Seed 資料 (Prompt 卡片) 成功載入並可點擊查看明細", async ({ page }) => {
     await page.goto("/#/");
 

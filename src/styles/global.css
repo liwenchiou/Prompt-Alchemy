@@ -132,6 +132,15 @@ code {
   }
 }
 
+@keyframes valueHeadlineIntroFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes heroDeviceFloat {
   0%,
   100% {
@@ -158,6 +167,94 @@ code {
   display: inline-block;
   margin-left: 1px;
   animation: heroCaretBlink 1s steps(1, end) infinite;
+}
+
+.value-headline-intro-fade-in {
+  display: inline-block;
+  animation: valueHeadlineIntroFadeIn 800ms ease-out both;
+}
+
+.pacman-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 180ms ease-out;
+}
+
+.pacman-background.is-ready {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pacman-background-dot,
+.pacman-background-character {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.pacman-background-dot {
+  width: clamp(5px, 0.8vw, 9px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #ffd700;
+  box-shadow: 0 0 10px rgb(255 215 0 / 55%);
+  opacity: 0.38;
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+}
+
+.pacman-background-dot.is-eaten {
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+}
+
+.pacman-background-character {
+  width: clamp(22px, 3vw, 38px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) rotate(var(--pacman-angle));
+}
+
+.pacman-background.is-ready .pacman-background-character {
+  transition: left 800ms linear, top 800ms linear;
+}
+
+.pacman-background-mouth {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #ffe94d;
+  box-shadow: 0 0 18px rgb(255 233 77 / 50%);
+  animation: pacmanChomp 260ms steps(1, end) infinite;
+}
+
+@keyframes pacmanChomp {
+  0%,
+  100% {
+    -webkit-mask: conic-gradient(
+      #000 0deg 45deg,
+      transparent 45deg 135deg,
+      #000 135deg 360deg
+    );
+    mask: conic-gradient(
+      #000 0deg 45deg,
+      transparent 45deg 135deg,
+      #000 135deg 360deg
+    );
+  }
+  50% {
+    -webkit-mask: none;
+    mask: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pacman-background {
+    display: none;
+  }
 }
 
 .hero-device-float {

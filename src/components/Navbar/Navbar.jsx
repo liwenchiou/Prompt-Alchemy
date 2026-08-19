@@ -1,5 +1,10 @@
 import { Link } from "react-router-dom";
-import { ClipboardList, FolderHeart, HelpCircle } from "lucide-react";
+import {
+  ClipboardList,
+  FolderHeart,
+  HelpCircle,
+  FolderBookmark,
+} from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import { useOnboarding } from "../../context/OnboardingContext";
 
@@ -10,32 +15,32 @@ export default function Navbar() {
   return (
     <nav
       data-pencil-name="Top Nav"
-      className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center py-4 px-6 bg-[#0A0E1A] border-b border-[#39FF14]/15"
+      className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center py-3 px-3 sm:py-4 sm:px-6 bg-[#0A0E1A] border-b border-[#39FF14]/15"
     >
       <Link
         to="/"
         data-pencil-name="Brand"
         data-tour="navbar-brand"
-        className="box-border w-fit shrink-0 h-fit flex flex-row gap-3 justify-start items-center no-underline me-4 sm:me-0"
+        className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 sm:gap-3 justify-start items-center no-underline me-4 sm:me-0"
       >
         <div
           data-pencil-name="Brand Mark Wrap"
-          className="box-border w-7.5 shrink-0 h-7.5 relative"
+          className="box-border w-6 sm:w-7.5 shrink-0 h-6 sm:h-7.5 relative"
         >
           <div
             data-pencil-name="Brand Mark"
-            className="box-border w-7.5 h-7.5 absolute left-0 top-0 bg-[#39FF14] rounded-full z-0"
+            className="box-border w-6 sm:w-7.5 h-6 sm:h-7.5 absolute left-0 top-0 bg-[#39FF14] rounded-full z-0"
           ></div>
           <div
             data-pencil-name="Brand Dot"
-            className="text-[14px]/[normal] box-border absolute left-2 top-1.5 text-[#262626] font-bold text-left whitespace-nowrap z-10"
+            className="text-[12px]/[normal] sm:text-[14px]/[normal] box-border absolute left-1.5 sm:left-2 top-1 sm:top-1.5 text-[#262626] font-bold text-left whitespace-nowrap z-10"
           >
             ✦
           </div>
         </div>
         <div
           data-pencil-name="Brand Text"
-          className="text-[20px]/[normal] box-border text-[#39FF14] font-bold text-left whitespace-nowrap"
+          className="text-[16px]/[normal] sm:text-[20px]/[normal] box-border text-[#39FF14] font-bold text-left whitespace-nowrap"
         >
           Prompt 鍊金坊
         </div>
@@ -57,7 +62,7 @@ export default function Navbar() {
           to="/skills"
           data-pencil-name="Nav Prompts列表"
           aria-label="Prompts列表"
-          className="inline-flex flex-1 lg:flex-none justify-center items-center text-[16px]/[normal] box-border text-[#7DCEA0] hover:text-[#39FF14] transition-colors font-bold text-center whitespace-nowrap no-underline"
+          className="hidden sm:inline-flex flex-1 lg:flex-none justify-center items-center text-[16px]/[normal] box-border text-[#7DCEA0] hover:text-[#39FF14] transition-colors font-bold text-center whitespace-nowrap no-underline"
         >
           <span className="hidden sm:inline">Prompts列表</span>
           <span className="sm:hidden" aria-hidden="true">
@@ -68,11 +73,11 @@ export default function Navbar() {
           to="/agent-skills"
           data-pencil-name="Nav Agent Skills"
           aria-label="Agent Skills"
-          className="inline-flex flex-1 lg:flex-none justify-center items-center text-[16px]/[normal] box-border text-[#7DCEA0] hover:text-[#39FF14] transition-colors font-bold text-center whitespace-nowrap no-underline"
+          className="hidden sm:inline-flex flex-1 lg:flex-none justify-center items-center text-[16px]/[normal] box-border text-[#7DCEA0] hover:text-[#39FF14] transition-colors font-bold text-center whitespace-nowrap no-underline"
         >
           <span className="hidden sm:inline">Skills清單</span>
           <span className="sm:hidden" aria-hidden="true">
-            <ClipboardList size={20} />
+            <FolderBookmark size={20} />
           </span>
         </Link>
         {user && (
@@ -100,7 +105,7 @@ export default function Navbar() {
             onClick={replayTour}
             data-tour="tour-replay-btn"
             title="重新觀看新手導覽"
-            className="box-border flex items-center gap-1.5 py-2 px-3 text-[14px] text-[#7DCEA0] hover:text-[#39FF14] bg-white/5 hover:bg-[#39FF14]/10 border border-white/10 hover:border-[#39FF14]/40 rounded-lg transition-all cursor-pointer"
+            className="hidden sm:flex box-border items-center gap-1.5 py-2 px-3 text-[14px] text-[#7DCEA0] hover:text-[#39FF14] bg-white/5 hover:bg-[#39FF14]/10 border border-white/10 hover:border-[#39FF14]/40 rounded-lg transition-all cursor-pointer"
           >
             <HelpCircle size={17} className="text-[#FFD700]" />
             <span className="hidden sm:inline font-semibold">新手指引</span>
