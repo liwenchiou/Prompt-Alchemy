@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Star, GitFork } from "lucide-react";
+import { Heart, Star, GitFork, Boxes, Box } from "lucide-react";
 import { copyToClipboard } from "../../utils/copyToClipboard";
 import useAuth from "../../hooks/useAuth";
 import { getTagStyles } from "../../utils/tagStyles";
@@ -170,12 +170,17 @@ export default function SkillCard({
         {installRows.length > 0 ? (
           <div className="box-border w-full flex flex-col gap-1.5">
             {installShape && (
-              <span
-                data-pencil-name="Install Shape Badge"
-                className="w-fit text-[10px]/[normal] shrink-0 text-[#7DCEA0] border border-[#1A3A2A] rounded px-1"
-              >
-                {installShape === "single-kit" ? "Single kit" : "Full package"}
-              </span>
+              <div data-pencil-name="Install Shape Badge" className="w-fit">
+                {installShape === "single-kit" ? (
+                  <div className="flex gap-1.5 items-center justify-center text-[12px]/[normal] shrink-0 text-[#ffffff] bg-[#b15902] rounded px-2 py-1">
+                    <Box size={14} /> Single kit
+                  </div>
+                ) : (
+                  <div className="flex gap-1.5 items-center justify-center text-[12px]/[normal] shrink-0 text-[#ffffff] bg-[#0012b1] rounded px-2 py-1">
+                    <Boxes size={14} /> Full package
+                  </div>
+                )}
+              </div>
             )}
 
             {availableAgentOptions.length > 0 && (
@@ -217,15 +222,23 @@ export default function SkillCard({
 
             {isGitClone && (
               <div
-                data-pencil-name="Install Method Badge Git Clone"
-                className="text-[13px]/[normal] w-fit shrink-0 flex items-center gap-1 border border-[#FFFFFF] rounded-[4px] p-1 text-[#FFFFFF]"
+                data-pencil-name="Install Shape Badge"
+                className="w-fit gap-1.5 flex flex-col"
               >
-                <img
-                  src={gitCloneIcon}
-                  alt="Git Clone Icon"
-                  className="w-4 h-4 inline-block brightness-0 invert"
-                />
-                <span>Git Clone</span>
+                <div className="flex gap-1.5 items-center justify-center text-[12px]/[normal] shrink-0 text-[#ffffff] bg-[#0012b1] rounded px-2 py-1">
+                  <Boxes size={14} /> Full package
+                </div>
+                <div
+                  data-pencil-name="Install Method Badge Git Clone"
+                  className="text-[13px]/[normal] w-fit shrink-0 flex items-center gap-1 border border-[#FFFFFF] rounded-[4px] p-1 text-[#FFFFFF]"
+                >
+                  <img
+                    src={gitCloneIcon}
+                    alt="Git Clone Icon"
+                    className="w-4 h-4 inline-block brightness-0 invert"
+                  />
+                  <span>Git Clone</span>
+                </div>
               </div>
             )}
 

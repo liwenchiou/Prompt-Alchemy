@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import ContactWidget from "../../components/ContactWidget/ContactWidget";
 import FAQSection from "../../components/FAQSection/FAQSection";
+import searchPromptPixel from "../../assets/images/prompt-alchemy/search-prompt-pixel.png";
+import savePromptPixel from "../../assets/images/prompt-alchemy/save-prompt-pixel.png";
+import launchSkillPixel from "../../assets/images/prompt-alchemy/launch-skill-pixel.png";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -453,6 +456,93 @@ export default function Home() {
             </SwiperSlide>
           ))}
         </Swiper>
+      </section>
+
+      {/* Why Prompt Alchemy Section */}
+      <section
+        aria-labelledby="prompt-alchemy-value-title"
+        className="w-full max-w-350 mt-18 overflow-hidden rounded-3xl border border-[#39FF14]/25 bg-[#0D1523] px-5 py-12 sm:px-10 sm:py-15"
+      >
+        <div className="relative mx-auto max-w-3xl">
+          <div
+            aria-hidden="true"
+            className="absolute -top-22 left-1/2 h-44 w-44 -translate-x-1/2 rounded-full bg-[#39FF14]/12 blur-3xl"
+          />
+          <p className="relative text-xs font-bold tracking-[0.22em] text-[#39FF14]">
+            PROMPT ALCHEMY LOOP
+          </p>
+          <h2
+            id="prompt-alchemy-value-title"
+            className="relative mt-3 text-3xl leading-tight font-bold text-white sm:text-4xl"
+          >
+            從「又要重打」到「直接開工」
+          </h2>
+          <p className="relative mt-4 text-base leading-7 text-[#A5D6B7]">
+            好用的 AI 指令不是用過就算了，收進來，下次直接派上用場。
+          </p>
+        </div>
+
+        <div className="relative mt-11 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-stretch lg:gap-6">
+          <article className="flex flex-col items-center text-center">
+            <div className="flex h-60 w-full items-center justify-center sm:h-68">
+              <img
+                src={searchPromptPixel}
+                alt="像素冒險者用放大鏡尋找 Prompt"
+                className="h-full w-full object-contain [image-rendering:pixelated]"
+              />
+            </div>
+            <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
+              好用的 Prompt，<br />下次不用再找。
+            </h3>
+          </article>
+
+          <div
+            aria-hidden="true"
+            className="alchemy-connector hidden self-center text-3xl font-light text-[#39FF14] lg:block"
+          >
+            ×
+          </div>
+
+          <article className="flex flex-col items-center text-center">
+            <div className="flex h-60 w-full items-center justify-center sm:h-68">
+              <img
+                src={savePromptPixel}
+                alt="像素冒險者將 Prompt 收進寶箱收藏"
+                className="h-full w-full object-contain [image-rendering:pixelated]"
+              />
+            </div>
+            <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
+              有感的那一個，<br />先收藏再說。
+            </h3>
+          </article>
+
+          <div
+            aria-hidden="true"
+            className="alchemy-connector hidden self-center text-3xl font-light text-[#39FF14] lg:block"
+          >
+            ×
+          </div>
+
+          <article className="flex flex-col items-center text-center">
+            <div className="flex h-60 w-full items-center justify-center sm:h-68">
+              <img
+                src={launchSkillPixel}
+                alt="像素冒險者從終端機啟動輔助機器人"
+                className="h-full w-full object-contain [image-rendering:pixelated]"
+              />
+            </div>
+            <h3 className="mt-5 text-xl leading-snug font-bold text-white sm:text-2xl">
+              挑好 Skill，<br />直接帶走。
+            </h3>
+          </article>
+        </div>
+
+        <Link
+          to="/skills"
+          className="mt-10 inline-flex items-center rounded-lg bg-[#39FF14] px-5 py-3 text-sm font-bold text-[#0A0E1A] no-underline transition-colors hover:bg-[#71FF52] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#39FF14]"
+        >
+          去找一個順手的 Prompt
+        </Link>
       </section>
       <FAQSection />
 

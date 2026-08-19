@@ -7,10 +7,7 @@ const AGENT_ROWS = [
 function buildGitCloneSnippet(repoLabel) {
   const url = `https://github.com/${repoLabel}/archive/HEAD.tar.gz`;
   return [
-    "# Git Bash / WSL / macOS / Linux：",
-    `curl -fsSL ${url} | tar -xz --strip-components=1 -k`,
-    "# Windows PowerShell：",
-    `curl.exe -fsSL ${url} | tar -xz --strip-components=1 -k`,
+    `curl -fsSL ${url} | tar -xz --strip-components=1 -k`
   ].join("\n");
 }
 
@@ -60,10 +57,6 @@ export function buildInstallRows(skill) {
   return rows;
 }
 
-/**
- * agent 選擇器的預設值（12 號票）：優先選 Codex，這個 skill 不支援 Codex
- * 才退而求其次選第一個支援的 agent；完全沒有支援的 agent 時回傳 null。
- */
 export function getDefaultAgent(skill) {
   const supportedAgents = skill?.supportedAgents || [];
   if (supportedAgents.includes("codex")) return "codex";
