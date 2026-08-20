@@ -4,62 +4,94 @@ import { Link } from "react-router-dom";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import {
   getSkills,
+  getAdminAgentSkills,
   getParametersByType,
   getAdminAuth,
   getUsers,
   isSkillActive,
 } from "../../api/adminApi";
-import { getPublishedPrompts } from "../../api/promptApi";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    inactive: 0,
+    promptTotal: 0,
+    promptActive: 0,
+    promptInactive: 0,
+    agentSkillTotal: 0,
+    agentSkillActive: 0,
+    agentSkillInactive: 0,
+    totalItems: 0,
+    activeTotal: 0,
+    inactiveTotal: 0,
     categories: 0,
     users: 0,
   });
   const [popular, setPopular] = useState([]);
   const [mostFavorited, setMostFavorited] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const admin = getAdminAuth();
 
   useEffect(() => {
-    Promise.all([
+    let isMounted = true;
+
+    Promise.allSettled([
       getSkills(),
-      getParametersByType("category"),
-      getUsers(),
-      getPublishedPrompts(),
-    ]).then(([skills, categories, users, publishedPrompts]) => {
-      // 統計數據
-      setStats({
-        total: skills.length,
-        active: skills.filter((s) => isSkillActive(s)).length,
-        inactive: skills.filter((s) => !isSkillActive(s)).length,
-        categories: categories.length,
-        users: users.length,
+      getAdminAgentSkills().catch(() => []),
+      getParametersByType("category").catch(() => []),
+      getUsers().catch(() => []),
+    ])
+      .then(([skillsRes, agentSkillsRes, categoriesRes, usersRes]) => {
+        if (!isMounted) return;
+
+        const skills = skillsRes.status === "fulfilled" && Array.isArray(skillsRes.value) ? skillsRes.value : [];
+        const agentSkills = agentSkillsRes.status === "fulfilled" && Array.isArray(agentSkillsRes.value) ? agentSkillsRes.value : [];
+        const categories = categoriesRes.status === "fulfilled" && Array.isArray(categoriesRes.value) ? categoriesRes.value : [];
+        const users = usersRes.status === "fulfilled" && Array.isArray(usersRes.value) ? usersRes.value : [];
+
+        const promptActive = skills.filter((s) => isSkillActive(s)).length;
+        const promptInactive = skills.length - promptActive;
+        const agentSkillActive = agentSkills.filter((s) => isSkillActive(s)).length;
+        const agentSkillInactive = agentSkills.length - agentSkillActive;
+
+        setStats({
+          promptTotal: skills.length,
+          promptActive,
+          promptInactive,
+          agentSkillTotal: agentSkills.length,
+          agentSkillActive,
+          agentSkillInactive,
+          totalItems: skills.length + agentSkills.length,
+          activeTotal: promptActive + agentSkillActive,
+          inactiveTotal: promptInactive + agentSkillInactive,
+          categories: categories.length,
+          users: users.length,
+        });
+
+        // Top 5 熱門榜單（直接依後端真實數據庫的複製次數排序）
+        const pop = [...skills]
+          .sort((a, b) => Number(b.copyCount || b.copy_count || 0) - Number(a.copyCount || a.copy_count || 0))
+          .slice(0, 5);
+        setPopular(pop);
+
+        // Top 5 前台最多被收藏（直接依後端真實數據庫的收藏數排序）
+        const favs = [...skills]
+          .sort((a, b) => Number(b.favoriteCount || b.favorite_count || 0) - Number(a.favoriteCount || a.favorite_count || 0))
+          .slice(0, 5);
+        setMostFavorited(favs);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
       });
 
-      // Top 5 熱門榜單（取前台已發布內容，依複製次數排序）
-      const pop = [...publishedPrompts]
-        .sort((a, b) => (b.copyCount || 0) - (a.copyCount || 0))
-        .slice(0, 5);
-      setPopular(pop);
-
-      // Top 5 前台最多被收藏（取前台已發布內容，依收藏數排序）
-      const favs = [...publishedPrompts]
-        .sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0))
-        .slice(0, 5);
-      setMostFavorited(favs);
-    });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const cards = [
-    { label: "全部 Prompt / Skill", value: stats.total },
-    { label: "會員總數", value: stats.users },
-    { label: "啟用", value: stats.active },
-    { label: "未啟用", value: stats.inactive },
-    { label: "分類數量", value: stats.categories },
+    { label: "Prompt 總數", value: stats.promptTotal, sub: `啟用 ${stats.promptActive} / 停用 ${stats.promptInactive}` },
+    { label: "Agent Skill 總數", value: stats.agentSkillTotal, sub: `啟用 ${stats.agentSkillActive} / 停用 ${stats.agentSkillInactive}` },
+    { label: "會員總數", value: stats.users, sub: "註冊會員" },
   ];
 
   return (
@@ -71,18 +103,23 @@ export default function Dashboard() {
       <div className="space-y-8 p-8">
         
         {/* 1. 統計數字卡片 */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {cards.map((card) => (
             <div
               key={card.label}
               className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900"
             >
               <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                {card.value}
+                {loading ? "..." : card.value}
               </div>
-              <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <div className="mt-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                 {card.label}
               </div>
+              {card.sub && (
+                <div className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                  {card.sub}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -153,11 +190,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5 text-sm font-bold text-orange-500">
-                    🔥 {s.copyCount}
+                    🔥 {s.copyCount ?? s.copy_count ?? 0}
                   </div>
                 </Link>
               ))}
-              {popular.length === 0 && (
+              {!loading && popular.length === 0 && (
                 <div className="p-8 text-center text-sm text-gray-400">尚無資料</div>
               )}
             </div>
@@ -184,11 +221,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5 text-sm font-bold text-pink-500">
-                    ❤️ {s.favoriteCount || 0}
+                    ❤️ {s.favoriteCount ?? s.favorite_count ?? 0}
                   </div>
                 </Link>
               ))}
-              {mostFavorited.length === 0 && (
+              {!loading && mostFavorited.length === 0 && (
                 <div className="p-8 text-center text-sm text-gray-400">尚無資料</div>
               )}
             </div>
@@ -199,3 +236,4 @@ export default function Dashboard() {
     </>
   );
 }
+
