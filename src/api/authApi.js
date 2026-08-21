@@ -1,7 +1,4 @@
 import { apiRequest } from "./apiClient";
-import { storage } from "../utils/storage";
-
-const USERS_KEY = "admin_users";
 
 /**
  * 會員登入 (直連後端 Express API)

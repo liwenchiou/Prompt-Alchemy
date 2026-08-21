@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
 import { getCategoryName, isSkillActive } from "../../api/adminApi";
-import { formatDate } from "../../utils/date";
 
 export default function AgentSkillTable({ skills, loading, onToggleActive }) {
   const navigate = useNavigate();

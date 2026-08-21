@@ -99,7 +99,7 @@ describe("buildInstallRows — 依 installKind／supportedAgents 組出對應的
     expect(rows.map((row) => row.key)).toEqual(["claude", "codex", "cursor"]);
   });
 
-  it("installKind='git_clone' 時只回傳 curl | tar 一組（bash + PowerShell 兩版），忽略 supportedAgents", () => {
+  it("installKind='git_clone' 時只回傳 curl | tar 一組，忽略 supportedAgents", () => {
     const rows = buildInstallRows({
       ...baseSkill,
       installKind: "git_clone",
@@ -110,12 +110,7 @@ describe("buildInstallRows — 依 installKind／supportedAgents 組出對應的
       {
         key: "git-clone",
         label: "Git Clone",
-        command: [
-          "# Git Bash / WSL / macOS / Linux：",
-          "curl -fsSL https://github.com/mattpocock/skills/archive/HEAD.tar.gz | tar -xz --strip-components=1 -k",
-          "# Windows PowerShell：",
-          "curl.exe -fsSL https://github.com/mattpocock/skills/archive/HEAD.tar.gz | tar -xz --strip-components=1 -k",
-        ].join("\n"),
+        command: "curl -fsSL https://github.com/mattpocock/skills/archive/HEAD.tar.gz | tar -xz --strip-components=1 -k",
       },
     ]);
   });

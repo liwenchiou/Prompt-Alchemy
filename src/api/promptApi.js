@@ -108,7 +108,7 @@ export async function syncRemoteParameters() {
       storage.set(PARAMETERS_KEY, merged);
       return merged;
     }
-  } catch (err) {
+  } catch (_err) {
     // Ignore error if backend parameters not accessible
   }
   return seedParameters();

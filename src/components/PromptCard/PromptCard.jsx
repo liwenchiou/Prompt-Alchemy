@@ -37,17 +37,9 @@ export default function PromptCard({ prompt, hideStats = false }) {
     navigate(`/skills/${prompt.id || 1}`);
   };
 
-  const categoryName = prompt?.category || "其他";
   const tags = prompt?.tags || [];
 
-  const iconWrapBg =
-    {
-      前端開發: "bg-[#0A1520]",
-      後端開發: "bg-[#0F1F18]",
-      資安相關: "bg-[#1A0A1A]",
-      翻譯助手: "bg-[#1A1A0A]",
-      小工具: "bg-[#1A0A15]",
-    }[categoryName] || "bg-[#0F1F18]";
+
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -57,14 +49,11 @@ export default function PromptCard({ prompt, hideStats = false }) {
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <article
       onClick={handleCardClick}
-      onKeyDown={handleKeyDown}
-      aria-label={`檢視 Prompt：${prompt?.title || "技能詳情"}`}
+      aria-label={`Prompt：${prompt?.title || "技能詳情"}`}
       data-pencil-name={prompt?.title || "後端 API 審查"}
-      className="box-border flex-1 min-w-0 h-fit flex flex-col gap-3.5 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#39FF14] overflow-hidden"
+      className="box-border flex-1 min-w-0 h-fit flex flex-col gap-3.5 p-[28px_16px_24px_16px] justify-start items-start bg-[#111827] border-2 border-[#1A4A2A] rounded-xl hover:border-[#39FF14]/40 hover:shadow-lg transition-all duration-300 cursor-pointer focus-within:ring-2 focus-within:ring-[#39FF14] overflow-hidden"
     >
       {/* 卡片title + 收藏 + 簡介 */}
       <div
@@ -72,12 +61,14 @@ export default function PromptCard({ prompt, hideStats = false }) {
         className="box-border w-full h-fit shrink-0 flex flex-col gap-1.5 justify-start items-start"
       >
         <div className="flex w-full justify-between items-center">
-          <div
+          <button
+            type="button"
+            onClick={handleCardClick}
             data-pencil-name="Card Title"
-            className="text-[20px]/[normal] box-border text-[#E0F0E8] font-bold text-left whitespace-nowrap overflow-hidden text-ellipsis w-full"
+            className="text-[20px]/[normal] box-border text-[#E0F0E8] font-bold text-left whitespace-nowrap overflow-hidden text-ellipsis w-full hover:text-[#39FF14] transition-colors bg-transparent border-0 cursor-pointer p-0 focus:outline-none"
           >
             {prompt?.title || "後端 API 審查"}
-          </div>
+          </button>
           {!hideStats && (
             <button
               type="button"
@@ -143,6 +134,6 @@ export default function PromptCard({ prompt, hideStats = false }) {
           </div>
         </button>
       </div>
-    </div>
+    </article>
   );
 }

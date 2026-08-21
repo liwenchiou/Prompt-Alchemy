@@ -2,8 +2,6 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { useNavigate, useLocation } from 'react-router-dom';
 import { driver } from 'driver.js';
 import { createTourSteps } from '../config/tourSteps';
-import { getPublishedPrompts } from '../api/promptApi';
-import { getAgentSkills } from '../api/agentSkillApi';
 import useAuth from '../hooks/useAuth';
 
 const STORAGE_KEY = 'prompt_alchemy_onboarding_v1';
@@ -65,7 +63,9 @@ function isSameRoute(stepRoute, currentPath) {
 }
 
 export function OnboardingProvider({ children }) {
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(true);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(() => {
+    return Boolean(localStorage.getItem(STORAGE_KEY));
+  });
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
   const [isTourActive, setIsTourActive] = useState(false);
   const navigate = useNavigate();
@@ -85,9 +85,9 @@ export function OnboardingProvider({ children }) {
     if (!user) return; // 未登入，不自動彈出
     const completed = localStorage.getItem(STORAGE_KEY);
     if (!completed) {
-      setHasSeenOnboarding(false);
       // 延遲 600ms 讓首頁加載
       const timer = setTimeout(() => {
+        setHasSeenOnboarding(false);
         setIsWelcomeOpen(true);
       }, 600);
       return () => clearTimeout(timer);
@@ -97,16 +97,29 @@ export function OnboardingProvider({ children }) {
   const completeOnboarding = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, 'true');
     localStorage.removeItem(ACTIVE_STEP_KEY);
-    setHasSeenOnboarding(false);
+    setHasSeenOnboarding(true);
+    setIsWelcomeOpen(false);
     setIsTourActive(false);
-    if (!isSameRoute('/', locationRef.current)) {
+
+    if (driverInstanceRef.current) {
+      isNavigatingRef.current = true;
+      try {
+        driverInstanceRef.current.destroy();
+      } catch (_e) {
+        // ignore
+      }
+      isNavigatingRef.current = false;
+      driverInstanceRef.current = null;
+    }
+
+    // 當完成導覽且不在首頁時，自動回返首頁
+    if (locationRef.current !== '/') {
       navigate('/');
-      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [navigate]);
 
-  const startTour = useCallback((startIndex = 0) => {
-    const stepIdx = typeof startIndex === 'number' ? startIndex : 0;
+  const startTour = useCallback((stepIndex = 0) => {
+    const stepIdx = typeof stepIndex === 'number' ? stepIndex : 0;
     setIsWelcomeOpen(false);
     setIsTourActive(true);
     localStorage.setItem(ACTIVE_STEP_KEY, stepIdx.toString());
@@ -116,7 +129,7 @@ export function OnboardingProvider({ children }) {
       isNavigatingRef.current = true;
       try {
         driverInstanceRef.current.destroy();
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
       isNavigatingRef.current = false;
@@ -134,7 +147,7 @@ export function OnboardingProvider({ children }) {
       prevBtnText: '❮ 上一步',
       progressText: '步驟 {{current}} / {{total}}',
       steps,
-      onNextClick: (element, step, { config, state }) => {
+      onNextClick: (_element, _step, { config: _config, state: _state }) => {
         const currentStepIndex = driverObj.getActiveIndex() ?? 0;
         const currentStepConfig = steps[currentStepIndex];
         const nextStepIndex = currentStepIndex + 1;
@@ -173,7 +186,7 @@ export function OnboardingProvider({ children }) {
         }
       },
 
-      onPrevClick: (element, step, { config, state }) => {
+      onPrevClick: (_element, _step, { config: _config, state: _state }) => {
         const currentStepIndex = driverObj.getActiveIndex() ?? 0;
         const prevStepIndex = currentStepIndex - 1;
         const prevStepConfig = steps[prevStepIndex];

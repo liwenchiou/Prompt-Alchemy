@@ -79,7 +79,7 @@ export async function apiRequest(endpoint, options = {}) {
   if (typeof data === "string") {
     try {
       data = JSON.parse(data);
-    } catch (e) {
+    } catch (_e) {
       // 保留原始字串
     }
   }

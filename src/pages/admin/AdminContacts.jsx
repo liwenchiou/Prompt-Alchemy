@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AdminPageHeader from "../../components/admin/AdminPageHeader";
 import {
   getAdminContacts,
@@ -16,7 +16,7 @@ export default function AdminContacts() {
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
 
-  const loadData = async (status, kw) => {
+  const loadData = useCallback(async (status, kw) => {
     setLoading(true);
     try {
       const data = await getAdminContacts({
@@ -29,10 +29,28 @@ export default function AdminContacts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData(statusFilter, keyword);
+    let ignore = false;
+    const fetchContacts = async () => {
+      setLoading(true);
+      try {
+        const data = await getAdminContacts({
+          status: statusFilter === "all" ? null : statusFilter,
+          keyword: keyword || null,
+        });
+        if (!ignore) setContacts(data || []);
+      } catch (error) {
+        if (!ignore) alertHelper.error("讀取失敗", error.message || "無法載入聯絡清單");
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    };
+    fetchContacts();
+    return () => {
+      ignore = true;
+    };
   }, [statusFilter, keyword]);
 
   const handleSearchSubmit = (e) => {

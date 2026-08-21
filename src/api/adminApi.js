@@ -8,15 +8,11 @@
 import { storage } from "../utils/storage";
 import {
   parametersTable,
-  skillItemsTable,
-  usersTable,
 } from "./mocks/mockData";
 import { apiRequest } from "./apiClient";
 import { clearPublishedPromptsCache } from "./promptApi";
 
 const PARAMETERS_KEY = "admin_parameters";
-const SKILLS_KEY = "admin_skills";
-const USERS_KEY = "admin_users";
 const ADMIN_AUTH_KEY = "admin_auth";
 
 // ---- 種子初始化 -------------------------------------------------------------
@@ -61,62 +57,7 @@ function seedParameters() {
   return seed;
 }
 
-function seedSkills() {
-  const existing = storage.get(SKILLS_KEY);
-  if (existing) {
-    let updated = false;
-    const merged = [...existing];
-    skillItemsTable.forEach((item) => {
-      if (!merged.some((s) => s.id === item.id)) {
-        merged.push({ ...item });
-        updated = true;
-      }
-    });
-    if (updated) {
-      storage.set(SKILLS_KEY, merged);
-      return merged;
-    }
-    return existing;
-  }
 
-  const seed = skillItemsTable.map((item) => ({ ...item }));
-  storage.set(SKILLS_KEY, seed);
-  return seed;
-}
-
-function seedUsers() {
-  const existing = storage.get(USERS_KEY);
-  if (existing) {
-    let modified = false;
-    const migrated = existing.map((u) => {
-      let updatedUser = { ...u };
-      if (updatedUser.isActive === undefined) {
-        updatedUser.isActive = true;
-        modified = true;
-      }
-      if (updatedUser.role_id !== undefined) {
-        delete updatedUser.role_id;
-        modified = true;
-      }
-      return updatedUser;
-    });
-    if (modified) {
-      storage.set(USERS_KEY, migrated);
-      return migrated;
-    }
-    return existing;
-  }
-
-  const seed = usersTable.map((u) => {
-    return {
-      ...u,
-      isActive: true,
-      createdAt: `2026-06-01T08:00:00Z`,
-    };
-  });
-  storage.set(USERS_KEY, seed);
-  return seed;
-}
 
 function readParameters() {
   const cachedAll = Object.values(parametersCache).flat();
@@ -126,47 +67,7 @@ function readParameters() {
   return seedParameters();
 }
 
-function writeParameters(list) {
-  storage.set(PARAMETERS_KEY, list);
-  return list;
-}
 
-function readSkills() {
-  return seedSkills();
-}
-
-function writeSkills(list) {
-  storage.set(SKILLS_KEY, list);
-  return list;
-}
-
-function readUsers() {
-  return seedUsers();
-}
-
-function writeUsers(list) {
-  storage.set(USERS_KEY, list);
-  return list;
-}
-
-// ---- 工具 -------------------------------------------------------------------
-
-function generateId(prefix) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-}
-
-function nowIso() {
-  return new Date().toISOString();
-}
-
-// 模擬非同步 API，方便日後替換成真實請求
-function resolve(value) {
-  return Promise.resolve(
-    typeof structuredClone === "function"
-      ? structuredClone(value)
-      : JSON.parse(JSON.stringify(value)),
-  );
-}
 
 // ---- 統一參數管理 (Parameters CRUD) -------------------------------------------
 
@@ -321,9 +222,9 @@ export async function loginAdmin({ email, password }) {
     localStorage.removeItem("token");
     storage.remove(ADMIN_AUTH_KEY);
     if (err.data && err.data.message) {
-      throw new Error(err.data.message);
+      throw new Error(err.data.message, { cause: err });
     }
-    throw new Error(err.message || "登入失敗");
+    throw new Error(err.message || "登入失敗", { cause: err });
   }
 }
 

@@ -10,7 +10,7 @@ import {
   Boxes,
 } from "lucide-react";
 import MarkdownDoc from "../../components/MarkdownDoc/MarkdownDoc";
-import { getAgentSkillById } from "../../api/agentSkillApi";
+import { getAgentSkillById, getAgentSkills } from "../../api/agentSkillApi";
 import { getTagStyles } from "../../utils/tagStyles";
 import { usePageLoading } from "../../hooks/usePageLoading";
 import { copyToClipboard } from "../../utils/copyToClipboard";

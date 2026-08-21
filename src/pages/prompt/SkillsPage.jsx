@@ -58,10 +58,12 @@ export default function Skills() {
   // 資料就緒後關閉 loading
   usePageLoading(!loading);
 
-  useEffect(() => {
+  const [prevRouteCategory, setPrevRouteCategory] = useState(routeCategory);
+  if (routeCategory !== prevRouteCategory) {
+    setPrevRouteCategory(routeCategory);
     setSelectedCategory(routeCategory || "全部");
     setSelectedTag(null);
-  }, [location.key, routeCategory]);
+  }
 
   useEffect(() => {
     const loadPrompts = async () => {
@@ -71,7 +73,7 @@ export default function Skills() {
         if (requestId === promptsRequestId.current) {
           setPrompts(list);
         }
-      } catch (err) {
+      } catch (_err) {
         if (requestId === promptsRequestId.current) {
           setPrompts([]);
         }

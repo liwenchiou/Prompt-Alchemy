@@ -31,7 +31,7 @@ export default function ProtectedRoute() {
           // Token 有效，但不是 admin
           setIsAuthenticated(false);
         }
-      } catch (err) {
+      } catch (_err) {
         // Token 失效或其他錯誤
         setIsAuthenticated(false);
       } finally {

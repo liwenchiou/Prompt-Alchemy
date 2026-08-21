@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
           const favs = await getUserFavoriteAPI();
           setFavorites(favs);
           await loadSkillFavorites();
-        } catch (err) {
+        } catch (_err) {
           localStorage.removeItem("user");
         }
       }

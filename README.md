@@ -54,8 +54,8 @@ Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的生�
 | `npm run build` | 建置用於生產環境的靜態資源（輸出至 `dist/`） |
 | `npm run preview` | 在本地預覽生產環境的建置結果 |
 | `npm run lint` | 執行 ESLint 語法檢查與排版驗證 |
-| `npm test` | 執行 Vitest 進行單元與元件測試（27 隻測試檔，174 個測試案例 100% 通過） |
-| `npm run test:e2e` | 執行 Playwright 全套端到端 (E2E) 自動化測試（11 隻測試檔） |
+| `npm test` | 執行 Vitest 進行單元與元件測試（29 隻測試檔，180 個測試案例 100% 通過） |
+| `npm run test:e2e` | 執行 Playwright 全套端到端 (E2E)、效能與無障礙自動化測試（12 隻測試檔） |
 | `npm run test:e2e:ui` | 開啟 Playwright UI 圖像化介面進行 E2E 測試與除錯 |
 | `npm run test:e2e:report` | 檢視 Playwright HTML 端到端測試報告 |
 | `npm run deploy` | 將建置結果自動發布至 GitHub Pages 託管 |
@@ -69,7 +69,7 @@ Prompt Alchemy 是一個基於 React 19、Vite 與 Tailwind CSS v4 開發的生�
 ```
 Prompt-Alchemy/
 ├── docs/                 # 系統架構說明與全站 API 規格文件 (FRONTEND_API_SPEC.md)
-├── e2e/                  # Playwright 端到端 (E2E) 自動化測試腳本 (11 隻測試檔)
+├── e2e/                  # Playwright 端到端 (E2E) 與效能無障礙測試腳本 (12 隻測試檔)
 │   ├── 01-homepage.spec.js   # 首頁列表、搜尋、分類選單、FAQSection 展開與 Modal 視窗
 │   ├── 02-auth.spec.js       # 會員登入/登出驗證與錯誤處理
 │   ├── 03-favorites.spec.js  # 使用者收藏庫與 Real DB 同步
@@ -80,7 +80,8 @@ Prompt-Alchemy/
 │   ├── 08-admin-users.spec.js# 後台使用者帳號與權限資料管理
 │   ├── 09-skill-detail.spec.js# 技能詳細資訊頁面與互動測試
 │   ├── 10-agent-skills.spec.js# Agent Skills 技能庫清單與詳情頁測試
-│   └── 11-onboarding-tour.spec.js# 13 步新手指引 (Onboarding Tour) 跨頁導覽自動化測試
+│   ├── 11-onboarding-tour.spec.js# 13 步新手指引 (Onboarding Tour) 跨頁導覽自動化測試
+│   └── 12-perf-a11y.spec.js  # 全站網頁 Web 效能 (FCP/LCP/DCL) 與 WCAG 2.1 AA 無障礙 (a11y) 自動化檢測
 ├── src/
 │   ├── api/              # Axios 實例與 RESTful API 串接模組
 │   │   ├── adminApi.js   # 後台技能、FAQ、使用者、系統參數與聯絡訊息 API
@@ -97,7 +98,7 @@ Prompt-Alchemy/
 │   ├── components/       # React UI 組件（採 PascalCase 命名）
 │   │   ├── BulkInstallPanel/# 批量安裝 CLI 指令打包組件 (BulkInstallPanel.jsx)
 │   │   ├── FavoriteSkillCard/# 收藏 Skill 卡片與 Recipe 選單 (FavoriteSkillCard.jsx)
-│   │   ├── Onboarding/   # 導覽歡迎 Modal (WelcomeModal.jsx)
+│   │   ├── Onboarding/   # 導覽歡迎 Modal (WelcomeModal.jsx, WelcomeModal.test.jsx)
 │   │   ├── ErrorBoundary/# 全域錯誤邊界組件 (ErrorBoundary.jsx)
 │   │   ├── FAQSection/   # 前台常見問題手風琴組件 (FAQSection.jsx)
 │   │   ├── PromptCard/   # 提示詞卡片與詳情 Modal (PromptCard.jsx)
@@ -131,7 +132,7 @@ Prompt-Alchemy/
 - **防護路由與錯誤邊界**：採用 `ProtectedRoute.jsx` 嚴格控管後台專屬路由，並配合全域 `<ErrorBoundary>` 捕捉 UI 渲染異常呈現優雅備用畫面；搭配 API Client Interceptor 於 `401 Unauthorized` 時自動清除 Token 並跳轉登入頁。
 - **解耦 Event Bus 機制**：建立獨立輕量級 `eventBus.js` 模組，處理跨組件與 API 的非對稱發佈/訂閱（例如技能更新廣播與登入逾期通知），避免全域 `window` 事件污染。
 - **無障礙 (a11y) 與語意化標準**：核心互動組件（如 `PromptCard.jsx`、`FAQSection.jsx`、`BulkInstallPanel.jsx` 與 `FaqFormModal.jsx`）皆完整實作 `aria-expanded`、`aria-controls`、`aria-label`、`role="dialog"` 與鍵盤 (`Tab` / `Enter` / `Space`) 互動支援。
-- **單元與元件測試**：採用 **Vitest** 搭配 **React Testing Library** 進行全方位測試，涵蓋 API 串接、Mock 資料、`eventBus` 廣播、`ErrorBoundary` 攔截、路由守衛與 React UI 元件，共 **27 隻測試檔（174 個測試案例 100% 通過）**。
+- **單元與元件測試**：採用 **Vitest** 搭配 **React Testing Library** 進行全方位測試，涵蓋 API 串接、Mock 資料、`eventBus` 廣播、`ErrorBoundary` 攔截、路由守衛與 React UI 元件，共 **29 隻測試檔（180 個測試案例 100% 通過）**。
 - **E2E 端到端自動化測試**：採用 **Playwright** 進行前後端真實連線 (Real DB API) 自動化測試，共 **11 隻測試檔**，完整驗證前台瀏覽/搜尋/FAQ手風琴/收藏/Recipe打包/一鍵安裝/新手指引，以及後台權限防護、技能 CRUD、FAQ CRUD、帳號管理與參數調整。
 
 ---
@@ -140,7 +141,7 @@ Prompt-Alchemy/
 
 1. **單元與元件測試 (Unit & Component Test)**：
    - 執行 `npm test` 透過 **Vitest** 搭配 **React Testing Library** 進行測試。
-   - 涵蓋 API 邏輯、Mock 資料、EventBus、ErrorBoundary、核心路由守衛與各大 UI 元件，共 27 隻測試檔（174 個測試案例全數通過）。
+   - 涵蓋 API 邏輯、Mock 資料、EventBus、ErrorBoundary、核心路由守衛與各大 UI 元件，共 29 隻測試檔（180 個測試案例全數通過）。
 
 2. **端到端測試 (E2E Test)**：
    - 本專案使用 **Playwright** 進行前後端直連 (Real DB API `http://localhost:3000`) 的全自動化瀏覽器測試。

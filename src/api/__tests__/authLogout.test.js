@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { eventBus } from "../../utils/eventBus";
 import apiClient from "../apiClient";
-import { logoutUser } from "../authApi";
 
 describe("登出與 401 Token 逾期事件測試", () => {
   beforeEach(() => {
@@ -31,7 +30,7 @@ describe("登出與 401 Token 逾期事件測試", () => {
     const interceptor = apiClient.interceptors.response.handlers[0].rejected;
     try {
       await interceptor(mockError);
-    } catch (e) {
+    } catch (_e) {
       // expected error rejection
     }
 
@@ -62,7 +61,7 @@ describe("登出與 401 Token 逾期事件測試", () => {
     const interceptor = apiClient.interceptors.response.handlers[0].rejected;
     try {
       await interceptor(mockError);
-    } catch (e) {
+    } catch (_e) {
       // expected
     }
 

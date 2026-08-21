@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { MessageSquare, X, Send, Sparkles } from "lucide-react";
 import { submitContactForm } from "../../api/contactApi";
 import { alertHelper } from "../../utils/sweetAlert";
