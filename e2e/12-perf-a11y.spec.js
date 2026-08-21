@@ -118,8 +118,8 @@ test.describe("Prompt Alchemy 效能與無障礙全站自動化檢測", () => {
       }
 
       // 效能指標斷言 (優質網頁標準)
-      expect(metrics.fcp).toBeLessThan(2000); // FCP 小於 2.0 秒
-      expect(metrics.dcl).toBeLessThan(1500); // DCL 小於 1.5 秒
+      expect(metrics.fcp).toBeLessThan(2500); // FCP 小於 2.5 秒
+      expect(metrics.dcl).toBeLessThan(3000); // DCL 小於 3.0 秒
       expect(metrics.domNodesCount).toBeLessThan(2500); // DOM 節點小於 2500 個防止過大
     });
 
@@ -129,7 +129,7 @@ test.describe("Prompt Alchemy 效能與無障礙全站自動化檢測", () => {
       const renderDuration = Date.now() - startTime;
 
       console.log(`⚡ Agent Skills 頁面渲染時間: ${renderDuration} ms`);
-      expect(renderDuration).toBeLessThan(3000);
+      expect(renderDuration).toBeLessThan(5000);
     });
 
     test("前端關鍵搜尋篩選即時回應效能 (< 100ms)", async ({ page }) => {

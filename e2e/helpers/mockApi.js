@@ -364,16 +364,6 @@ export async function setupMockApiRoutes(page) {
 
   // 9. Agent Skills 前台瀏覽 /agent-skills Mock（列表 + 詳情）
   await page.route("**/agent-skills**", async (route) => {
-    try {
-      const response = await route.fetch();
-      if (response.ok()) {
-        await safeFulfill(route, { response });
-        return;
-      }
-    } catch {
-      // 後端沒開或連線失敗，自動回傳 Mock
-    }
-
     const url = new URL(route.request().url());
     const detailMatch = url.pathname.match(/\/agent-skills\/([^/]+)$/);
 
@@ -398,7 +388,8 @@ export async function setupMockApiRoutes(page) {
         keyword &&
         !(
           s.name.toLowerCase().includes(keyword) ||
-          s.intro.toLowerCase().includes(keyword)
+          s.intro.toLowerCase().includes(keyword) ||
+          (s.repoOwner && s.repoOwner.toLowerCase().includes(keyword))
         )
       ) {
         return false;

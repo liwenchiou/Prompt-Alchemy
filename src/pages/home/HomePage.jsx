@@ -458,6 +458,7 @@ export default function Home() {
           </div>
 
           <Swiper
+            role="region"
             className="featured-skills-carousel w-full"
             modules={[A11y, Keyboard, Pagination]}
             centeredSlides={canLoop}
@@ -501,6 +502,7 @@ export default function Home() {
           </div>
 
           <Swiper
+            role="region"
             className="featured-skills-carousel w-full"
             modules={[A11y, Keyboard, Pagination]}
             centeredSlides={canLoopAgentSkills}

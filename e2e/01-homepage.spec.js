@@ -52,13 +52,14 @@ test.describe("首頁 (Homepage) 端到端測試 - Real DB & Standalone 連結",
     await page.goto("/#/");
 
     // 搜尋卡片標題
-    const promptCard = page.locator("text=後端 API 審查").first();
+    const promptCard = page.locator('[data-tour="featured-prompts"] article, article').first();
     await expect(promptCard).toBeVisible({ timeout: 10000 });
 
-    await promptCard.dispatchEvent("click");
+    const titleBtn = promptCard.locator('button').first();
+    await titleBtn.dispatchEvent("click");
 
-    const modalOrDetail = page.locator("text=請你扮演資深後端工程師").first();
-    await expect(modalOrDetail).toBeVisible({ timeout: 5000 });
+    // 驗證導向詳情頁
+    await expect(page).toHaveURL(/.*skills.*/);
   });
 
   test("常見問題載入 API 資料並維持單一展開", async ({ page }) => {

@@ -41,12 +41,6 @@ export default function PromptCard({ prompt, hideStats = false }) {
 
 
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      handleCardClick();
-    }
-  };
 
   return (
     <article
